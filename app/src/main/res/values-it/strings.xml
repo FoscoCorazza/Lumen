@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Lume</string>
+    <string name="action_settings">Settings</string>
+    <string name="level_select">Selezione livello</string>
+    <string name="min_length">%minDist%</string>
+
+    <string name="EndLevelString1">Livello Completato</string>
+    <string name="EndLevelString2" formatted="false">%picked% su %total%</string>
+
+    <string name="LevelString000">Crea un percorso.\nRaccorda il Lume con la Lampadina e premi Play.</string>
+    <string name="LevelString001">Se il Percorso tra Lume e Lampadina si divide, anche il Lume si\ndivide. Tutti i Lumi richiesti (indicati sotto la Lampadina) devono\narrivare a destinazione contemporaneamente.</string>
+    <string name="LevelString002">Se il Percorso si riunisce, due o più Lumi che si incontrano\nnel raccordo ritorneranno un\'unica entità.</string>
+    <string name="LevelString003">Il Percorso non può passare attraverso gli ostacoli rossi.</string>
+    <string name="LevelString004">Prova i tasti sulla parte superiore della schermata.\nTi saranno utili in futuro.</string>
+    <string name="LevelString005">Le lampadine piccole sono Bonus.\nProva a prenderle tutte prima di raggiungere la principale.</string>
+    <string name="LevelString006">Semplicemente, vai.</string>
+    <string name="LevelString007">Il Lume che prende i Bonus non deve essere\nnecessariamente lo stesso che arriva alla Lampadina.</string>
+    <string name="LevelString008">Non esistono solo 90 e 45 gradi.</string>
+    <string name="LevelString009">La simmetria può aiutarti, ma non pensare\nsolo in orizzontale o verticale.</string>
+    <string name="LevelString010">Ricordati, la simmetria è bella.</string>
+    <string name="LevelString011">Ricordati, la simmetria non è sempre bella.</string>
+</resources>
