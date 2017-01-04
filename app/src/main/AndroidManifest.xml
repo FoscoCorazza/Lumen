@@ -29,12 +29,6 @@
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
         </activity>
-        <!--activity
-            android:name=".DebugMenuActivity"
-            android:label="@string/title_activity_menu"
-            android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
-        </activity-->
 
         <activity
             android:name=".activities.MenuActivity"

@@ -75,8 +75,11 @@ public class TitleSchemeLayout extends SchemeLayout {
 
 
         secretButtonA = new Rect(bx,by,bx+bw, by+bh);
-        bx+=4*bw-10;
+        bx+=(int) mainPaint.measureText(TITLE.substring(0,4)) +20;
         secretButtonB = new Rect(bx,by,bx+bw, by+bh);
+
+        // canvas.drawRect(secretButtonA, mainPaint);
+        // canvas.drawRect(secretButtonB, mainPaint);
 
 
     }
