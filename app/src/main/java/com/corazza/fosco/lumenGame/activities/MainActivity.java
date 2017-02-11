@@ -5,9 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.view.Window;
-import android.view.WindowManager;
 
 import com.corazza.fosco.lumenGame.MainThread;
 import com.corazza.fosco.lumenGame.R;
@@ -15,6 +12,7 @@ import com.corazza.fosco.lumenGame.schemes.SchemeInfo;
 import com.corazza.fosco.lumenGame.schemes.schemeLayout.SchemeLayout;
 import com.corazza.fosco.lumenGame.helpers.Consts;
 import com.corazza.fosco.lumenGame.helpers.SoundsHelper;
+import com.corazza.fosco.lumenGame.schemes.schemeLayout.ExtendedSchemeLayout;
 
 public class MainActivity extends SchemeLayoutActivity<SchemeLayout> {
 
@@ -31,16 +29,15 @@ public class MainActivity extends SchemeLayoutActivity<SchemeLayout> {
                 editor.apply();
             }
         }
-        mSchemeLayout =  Consts.getSchemeLayout(schemeToLoad, new SchemeLayout(this));
-        return Consts.getSchemeLayout(schemeToLoad, new SchemeLayout(this));
+
+        mSchemeLayout =  Consts.getSchemeLayout(schemeToLoad, new ExtendedSchemeLayout(this));
+        return mSchemeLayout;
     }
 
     @Override
     protected void initBeforeLayout() {
         Consts.loadConsts(this);
-        if(!SoundsHelper.getInstance().isPlaying()) {
-            //SoundsHelper.getInstance().play_theme(this);
-        }
+        SoundsHelper.getInstance().play_level_theme(this);
     }
 
     @Override

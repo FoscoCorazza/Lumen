@@ -40,6 +40,13 @@ public class DList<T extends SchemeLayoutDrawable> extends SchemeLayoutDrawable 
     }
 
     @Override
+    public void render(Canvas canvas, int x1, int y1) {
+        for(T t : getRawListCopy()){
+            t.render(canvas, x1, y1);
+        }
+    }
+
+    @Override
     public void update() {
         updateOpacity();
         for(T t : getRawListCopy()){
@@ -47,6 +54,13 @@ public class DList<T extends SchemeLayoutDrawable> extends SchemeLayoutDrawable 
             t.update();
         }
     }
+
+    /*@Override
+    public void inherit(SchemeLayoutDrawable drawable) {
+        for(T t : getRawListCopy()){
+            t.inherit(this);
+        }
+    }*/
 
 
     public ArrayList<T> getRawListCopy() {

@@ -20,11 +20,15 @@ import com.corazza.fosco.lumenGame.geometry.dots.Dot;
 import com.corazza.fosco.lumenGame.geometry.dots.PixelDot;
 import com.corazza.fosco.lumenGame.helpers.Paints;
 import com.corazza.fosco.lumenGame.helpers.Consts;
+import com.corazza.fosco.lumenGame.helpers.Palette;
+import com.corazza.fosco.lumenGame.helpers.SoundsHelper;
+import com.corazza.fosco.lumenGame.helpers.Utils;
 import com.corazza.fosco.lumenGame.savemanager.SaveFileManager;
 
 import static com.corazza.fosco.lumenGame.helpers.Consts.*;
 import static com.corazza.fosco.lumenGame.helpers.Consts.TITLE;
 import static com.corazza.fosco.lumenGame.helpers.Consts.baseGridSize;
+import static com.corazza.fosco.lumenGame.helpers.Utils.scaledInt;
 
 public class TitleSchemeLayout extends SchemeLayout {
 
@@ -34,15 +38,15 @@ public class TitleSchemeLayout extends SchemeLayout {
 
     public TitleSchemeLayout(Context context) {
         super(context);
-        init();
     }
 
-    private void init() {
+    protected void init() {
+        super.init();
         setTouchEnabled(false);
         setDrawElements(false);
-        Paints.put(LINEPAINT,    Consts.Colors.WHITE, Consts.lineW, Paint.Style.FILL);
-        Paints.put(TEXTPAINT,    Consts.Colors.WHITE, (int) (0.0375f* W), detailFont, Paint.Align.RIGHT);
-        Paints.put(BIGTEXTPAINT, Consts.Colors.WHITE, (int) (0.2460f* W), detailFont, Paint.Align.CENTER);
+        Paints.put(LINEPAINT,    Palette.get().getAnti(Palette.Gradiation.LUMOUS), Consts.lineW, Paint.Style.FILL);
+        Paints.put(TEXTPAINT,    Palette.get().getAnti(Palette.Gradiation.LUMOUS), (int) (0.0375f* W), detailFont, Paint.Align.RIGHT);
+        Paints.put(BIGTEXTPAINT, Palette.get().getAnti(Palette.Gradiation.LUMOUS), (int) (0.2200f* W), detailFont, Paint.Align.CENTER);
     }
 
     private void text_drawOn(Canvas canvas){
@@ -50,42 +54,44 @@ public class TitleSchemeLayout extends SchemeLayout {
         final Paint mainPaint = Paints.get(BIGTEXTPAINT, alpha);
         final Paint secoPaint = Paints.get(TEXTPAINT, alpha);
 
-        int y = (int) (gridCalc( 5) - (mainPaint.ascent() + mainPaint.descent()));
         int l = (int) mainPaint.measureText(TITLE);
 
-        int xPreTitle = l + (W-l)/2;
-        int yPreTitle = y - W/5;
+        int xPreTitle = l + (W-l)/2 - scaledInt(11);
+        int yPreTitle = (int) (gridCalc(5) - scaledInt(118));
 
         canvas.drawText(PRETITLE, xPreTitle, yPreTitle, secoPaint);
-        canvas.drawText(TITLE, W/2, y, mainPaint);
+        Utils.drawCenteredText(canvas, TITLE, W/2, (int) gridCalc(5) + scaledInt(15), mainPaint);
 
         try {
             PackageInfo pInfo = getContext().getPackageManager().getPackageInfo(getContext().getPackageName(), 0);
             String version = pInfo.versionName;
-            canvas.drawText("Versione: " + version, W - 10, H - 10, secoPaint);
+            canvas.drawText("Version: " + version, W - scaledInt(20), H - scaledInt(20) , secoPaint);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        // Secret Button
+        // Secret Buttons
         int bx = (W - l) / 2 - 1;
-        int by = y+15;
-        int bw = (int) mainPaint.measureText(TITLE.substring(0,1)) + 20;
-        int bh = (int) (mainPaint.ascent() + mainPaint.descent()) - 40;
+        int by = (int) gridCalc(4);
+        int bw = (int) mainPaint.measureText(TITLE.substring(0,1)) + scaledInt(20);
+        int bh = (int) gridCalc(2);
 
 
-        secretButtonA = new Rect(bx,by,bx+bw, by+bh);
-        bx+=(int) mainPaint.measureText(TITLE.substring(0,4)) +20;
-        secretButtonB = new Rect(bx,by,bx+bw, by+bh);
+        secretButtonL = new Rect(bx,by,bx+bw, by+bh);
+        bx+=(int) mainPaint.measureText(TITLE.substring(0,2)) +20;
+        secretButtonM = new Rect(bx,by,bx+bw, by+bh);
+        bx+=(int) mainPaint.measureText(TITLE.substring(2,4)) +20;
+        secretButtonN = new Rect(bx,by,bx+bw, by+bh);
 
-        // canvas.drawRect(secretButtonA, mainPaint);
-        // canvas.drawRect(secretButtonB, mainPaint);
-
+        // canvas.drawRect(secretButtonL, mainPaint);
+        // canvas.drawRect(secretButtonM, mainPaint);
+        // canvas.drawRect(secretButtonN, mainPaint);
 
     }
 
-    private Rect secretButtonA;
-    private Rect secretButtonB;
+    private Rect secretButtonL;
+    private Rect secretButtonM;
+    private Rect secretButtonN;
 
     @Override
     public void render(Canvas canvas){
@@ -108,7 +114,7 @@ public class TitleSchemeLayout extends SchemeLayout {
         long enTime = 7 * timeForOne + bgTime;
         float bgSize = 0;
         float enSize = gridCalc(-2, W);
-        float bgPosi = gridCalc(-1, H);
+        float bgPosi = gridCalc(-1, W);
         float enPosi = gridCalc(1);
 
         myX1 = valueOfNow(bgPosi, enPosi, bgTime, enTime);
@@ -135,10 +141,10 @@ public class TitleSchemeLayout extends SchemeLayout {
         bgTime = 3 * timeForOne + enTime;
         enTime = 5 * timeForOne + bgTime;
         bgSize = 0;
-        enSize = gridCalc(-8, H);
+        enSize = gridCalc(-7, H);
 
         myX1 = gridCalc(1);
-        myY1 = gridCalc(7);
+        myY1 = gridCalc(6);
         myX2 = gridCalc(1);
         myY2 = myY1 + valueOfNow(bgSize, enSize, bgTime, enTime);
 
@@ -194,7 +200,7 @@ public class TitleSchemeLayout extends SchemeLayout {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if(!tapped) {
-            if(isTouchingSecretButtonA(event)){
+            if(isTouchingSecretButtonL(event)){
                 secretTappedA++;
                 if(secretTappedA < 3)
                     firstBulb().notifyOverSaturation();
@@ -202,7 +208,9 @@ public class TitleSchemeLayout extends SchemeLayout {
                     tapped = true;
                     SchemeCreatorActivity.play(getActivity(), "4G01");
                 }
-            } else if(isTouchingSecretButtonB(event)) {
+            } else if(isTouchingSecretButtonM(event)) {
+                SoundsHelper.getInstance().swap();
+            } else if(isTouchingSecretButtonN(event)) {
                 firstBulb().notifyOverSaturation();
                 SaveFileManager.clear(getActivity());
             } else {
@@ -218,30 +226,46 @@ public class TitleSchemeLayout extends SchemeLayout {
         return blbs.get(0);
     }
 
-    private boolean isTouchingSecretButtonB(MotionEvent event) {
-        return isTouchingSecretButtonB(new PixelDot(event.getRawX(), event.getRawY()));
+    private boolean isTouchingSecretButtonN(MotionEvent event) {
+        return isTouchingSecretButtonN(new PixelDot(event.getRawX(), event.getRawY()));
     }
 
-    private boolean isTouchingSecretButtonB(Dot dot) {
-        int miny = Math.min(secretButtonB.top, secretButtonB.bottom);
-        int minx = Math.min(secretButtonB.left, secretButtonB.right);
-        int maxx = Math.max(secretButtonB.right, secretButtonB.left);
-        int maxy = Math.max(secretButtonB.bottom, secretButtonB.top);
+    private boolean isTouchingSecretButtonN(Dot dot) {
+        int miny = Math.min(secretButtonN.top, secretButtonN.bottom);
+        int minx = Math.min(secretButtonN.left, secretButtonN.right);
+        int maxx = Math.max(secretButtonN.right, secretButtonN.left);
+        int maxy = Math.max(secretButtonN.bottom, secretButtonN.top);
 
         return dot.pixelX() > minx && dot.pixelX() < maxx &&
                 dot.pixelY() > miny && dot.pixelY() < maxy;
 
     }
 
-    private boolean isTouchingSecretButtonA(MotionEvent event) {
-        return isTouchingSecretButtonA(new PixelDot(event.getRawX(), event.getRawY()));
+
+    private boolean isTouchingSecretButtonM(MotionEvent event) {
+        return isTouchingSecretButtonM(new PixelDot(event.getRawX(), event.getRawY()));
     }
 
-    private boolean isTouchingSecretButtonA(Dot dot) {
-        int miny = Math.min(secretButtonA.top, secretButtonA.bottom);
-        int minx = Math.min(secretButtonA.left, secretButtonA.right);
-        int maxx = Math.max(secretButtonA.right, secretButtonA.left);
-        int maxy = Math.max(secretButtonA.bottom, secretButtonA.top);
+    private boolean isTouchingSecretButtonM(Dot dot) {
+        int miny = Math.min(secretButtonM.top, secretButtonM.bottom);
+        int minx = Math.min(secretButtonM.left, secretButtonM.right);
+        int maxx = Math.max(secretButtonM.right, secretButtonM.left);
+        int maxy = Math.max(secretButtonM.bottom, secretButtonM.top);
+
+        return dot.pixelX() > minx && dot.pixelX() < maxx &&
+                dot.pixelY() > miny && dot.pixelY() < maxy;
+
+    }
+
+    private boolean isTouchingSecretButtonL(MotionEvent event) {
+        return isTouchingSecretButtonL(new PixelDot(event.getRawX(), event.getRawY()));
+    }
+
+    private boolean isTouchingSecretButtonL(Dot dot) {
+        int miny = Math.min(secretButtonL.top, secretButtonL.bottom);
+        int minx = Math.min(secretButtonL.left, secretButtonL.right);
+        int maxx = Math.max(secretButtonL.right, secretButtonL.left);
+        int maxy = Math.max(secretButtonL.bottom, secretButtonL.top);
 
         return dot.pixelX() > minx && dot.pixelX() < maxx &&
                 dot.pixelY() > miny && dot.pixelY() < maxy;

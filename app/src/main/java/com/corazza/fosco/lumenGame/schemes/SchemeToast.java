@@ -2,18 +2,15 @@ package com.corazza.fosco.lumenGame.schemes;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.text.Layout;
-import android.text.StaticLayout;
-import android.util.Log;
-import android.util.Pair;
 
 import com.corazza.fosco.lumenGame.geometry.dots.Dot;
 import com.corazza.fosco.lumenGame.geometry.dots.GridDot;
 import com.corazza.fosco.lumenGame.helpers.Consts;
 import com.corazza.fosco.lumenGame.helpers.Paints;
+import com.corazza.fosco.lumenGame.helpers.Palette;
+import com.corazza.fosco.lumenGame.helpers.Utils;
 
-import static com.corazza.fosco.lumenGame.helpers.Utils.scaled;
-import static com.corazza.fosco.lumenGame.helpers.Utils.scaledInt;
+import static com.corazza.fosco.lumenGame.helpers.Utils.scaledFrom480Int;
 
 /**
  * Created by Simone on 08/08/2016.
@@ -27,7 +24,7 @@ public class SchemeToast extends SchemeLayoutDrawable{
     Dot completeSize;
 
     public SchemeToast(String s) {
-        init(s, new GridDot(0, 10), new GridDot(Consts.hStep, 2));
+        init(s, new GridDot(0, Consts.hStep+2), new GridDot(Consts.hStep, 2));
     }
 
     private void init(String text, Dot position, Dot size) {
@@ -40,8 +37,8 @@ public class SchemeToast extends SchemeLayoutDrawable{
 
     @Override
     protected void initPaints() {
-        Paints.put(BACKPAINT, Consts.Colors.MATERIAL_BLACK);
-        Paints.put(TEXTPAINT, Consts.Colors.WHITE, scaledInt(16), Consts.detailFont, Paint.Align.CENTER);
+        Paints.put(BACKPAINT, Palette.get().getBack(Palette.Gradiation.DARKKK));
+        Paints.put(TEXTPAINT, Palette.get().getAnti(Palette.Gradiation.LUMOUS), scaledFrom480Int(16), Consts.detailFont, Paint.Align.CENTER);
     }
 
     @Override
@@ -52,20 +49,10 @@ public class SchemeToast extends SchemeLayoutDrawable{
         int y2 = (int) (y1 + completeSize.pixelY());
 
         Paint tPaint = Paints.get(TEXTPAINT, alpha());
-        float h = tPaint.descent() - tPaint.ascent();
 
         canvas.drawRect(x1,y1,x2,y2, Paints.get(BACKPAINT, extAlpha(150)));
 
-        String[] splits = text.split("\n");
-        int textX = (x1+x2)/2;
-        int textY = (int) ((y1+y2+h/2)/2);
-
-        textY -= h*(splits.length-1)/2;
-
-        for (String line : splits) {
-            canvas.drawText(line, textX, textY, tPaint);
-            textY += h;
-        }
+        Utils.drawCenteredText(canvas, text, (x1+x2)/2,(y1+y2)/2, tPaint);
 
     }
 }

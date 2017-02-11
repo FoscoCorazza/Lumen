@@ -20,4 +20,7 @@
     <string name="LevelString009">La simmetria può aiutarti, ma non pensare\nsolo in orizzontale o verticale.</string>
     <string name="LevelString010">Ricordati, la simmetria è bella.</string>
     <string name="LevelString011">Ricordati, la simmetria non è sempre bella.</string>
+    <string name="EndLevelAchievment1">Lampadine opzionali</string>
+    <string name="EndLevelAchievment2">Energia sprecata</string>
+    <string name="EndLevelAchievment3">Livello perfetto</string>
 </resources>

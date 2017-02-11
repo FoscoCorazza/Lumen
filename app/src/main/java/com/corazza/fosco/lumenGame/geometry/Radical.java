@@ -3,22 +3,17 @@ package com.corazza.fosco.lumenGame.geometry;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.util.Pair;
 import android.util.SparseIntArray;
 
-import com.corazza.fosco.lumenGame.geometry.dots.Dot;
 import com.corazza.fosco.lumenGame.geometry.dots.GridDot;
 import com.corazza.fosco.lumenGame.helpers.Consts;
 import com.corazza.fosco.lumenGame.helpers.Paints;
 
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Locale;
 
-import static com.corazza.fosco.lumenGame.helpers.Utils.scaled;
-import static com.corazza.fosco.lumenGame.helpers.Utils.scaledInt;
+import static com.corazza.fosco.lumenGame.helpers.Utils.scaledFrom480Int;
 
 /**
  * Created by Simone Chelo on 05/11/2016.
@@ -164,7 +159,7 @@ public class Radical implements Comparable<Radical>{
         Radical radical = (Radical) o;
         if(components == null) return radical.components == null;
         if(isInfinite()) return radical.isInfinite();
-        return pixelLength() - radical.pixelLength() < 1; //TODO Fare un vero controllo
+        return Math.abs(pixelLength() - radical.pixelLength()) < 1; //TODO Fare un vero controllo
 
     }
 
@@ -217,14 +212,14 @@ public class Radical implements Comparable<Radical>{
         }
     }
 
-    private Paint getColoredPaint(int component) {
+    private Paint getColoredPaint(int component, int alpha) {
         initPaints();
-        return Paints.get(RADPAINT + component, 255);
+        return Paints.get(RADPAINT + component, alpha);
     }
 
     public void drawOnCanvas(Canvas canvas, int x, int y, Paint backpaint) {
-        int pw = scaledInt(4);
-        int sw = scaledInt(10);
+        int pw = scaledFrom480Int(4);
+        int sw = scaledFrom480Int(10);
         ArrayList<Integer> componentsArray = componentsArray();
         int n = componentsArray.size();
         if(!equals(Zero)) {
@@ -234,7 +229,7 @@ public class Radical implements Comparable<Radical>{
                     cx = x + (i - n / 2) * sw;
                 }
                 canvas.drawCircle(cx, y, pw+2, backpaint);
-                canvas.drawCircle(cx, y, pw, getColoredPaint(componentsArray.get(i)));
+                canvas.drawCircle(cx, y, pw, getColoredPaint(componentsArray.get(i), backpaint.getAlpha()));
             }
         }
     }

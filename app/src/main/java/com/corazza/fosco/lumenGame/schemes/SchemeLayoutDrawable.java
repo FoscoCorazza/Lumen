@@ -3,6 +3,7 @@ import android.graphics.Canvas;
 
 import com.corazza.fosco.lumenGame.geometry.Path;
 import com.corazza.fosco.lumenGame.geometry.dots.Dot;
+import com.corazza.fosco.lumenGame.geometry.dots.PixelDot;
 import com.corazza.fosco.lumenGame.helpers.AnimType;
 import com.corazza.fosco.lumenGame.helpers.Consts;
 import com.corazza.fosco.lumenGame.helpers.Utils;
@@ -16,6 +17,7 @@ public abstract class SchemeLayoutDrawable {
 
     public float  opacity = 1;
     public Dot position;
+    protected PixelDot offset = new PixelDot(0,0);
     public int size = Consts.baseGridSize;
     protected boolean isFadingOut = false;
     protected boolean isFadingIn  = false;
@@ -95,7 +97,7 @@ public abstract class SchemeLayoutDrawable {
         return isFadingOut && getTimeElapsed(FADING) > FADING_TIME;
     }
 
-    protected int alpha() {
+    public int alpha() {
         return (int) (opacity*255);
     }
 
@@ -118,5 +120,9 @@ public abstract class SchemeLayoutDrawable {
 
     public boolean isIn(Dot dot) {
         return  (position != null && position.equals(dot));
+    }
+
+    public void render(Canvas canvas, int x1, int y1) {
+        render(canvas);
     }
 }

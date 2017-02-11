@@ -22,9 +22,7 @@ public class SchemeCreatorActivity extends SchemeLayoutActivity<SchemeCreatorLay
     }
 
     @Override
-    protected void initBeforeLayout() {
-
-    }
+    protected void initBeforeLayout() { }
 
     public static void play(Activity ctx, String code) {
         if(code != null)

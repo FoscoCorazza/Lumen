@@ -8,10 +8,11 @@ import com.corazza.fosco.lumenGame.geometry.dots.Dot;
 import com.corazza.fosco.lumenGame.helpers.AnimType;
 import com.corazza.fosco.lumenGame.helpers.Consts;
 import com.corazza.fosco.lumenGame.helpers.Paints;
+import com.corazza.fosco.lumenGame.helpers.Palette;
 import com.corazza.fosco.lumenGame.schemes.schemeLayout.SchemeLayout;
 import com.corazza.fosco.lumenGame.schemes.SchemeLayoutDrawable;
 
-import static com.corazza.fosco.lumenGame.helpers.Utils.scaledInt;
+import static com.corazza.fosco.lumenGame.helpers.Utils.scaledFrom480Int;
 
 public class Bulb extends SchemeLayoutDrawable {
 
@@ -22,14 +23,14 @@ public class Bulb extends SchemeLayoutDrawable {
 
     private static final int SATURATED = 1;
     private static final int UNSATURATED = 2;
-    private static final int MAIN_COLOR = Consts.Colors.MATERIAL_BLACK;
-    private static final int SECONDARY_COLOR = Consts.Colors.MATERIAL_LIGHTEST_GREY;
+    private static final int MAIN_COLOR = Palette.get().getBack(Palette.Gradiation.DARKKK);
+    private static final int SECONDARY_COLOR = Palette.get().getAnti(Palette.Gradiation.LUMOUS);
     private static final int ORBITANT = 1000;
     private static final long ORBITANT_TIME = 2000;
     private static final long ORBITANT_OFFSET = 3;
     private static final long ORBITANT_TIME_OFFSET = 100;
 
-    protected int baseSize = Consts.baseGridSize * 2 / 3;
+    protected int baseSize = Consts.baseGridSize / 2;
     protected int needSize = baseSize / 3;
     protected float satMultp = 1.5f;
 
@@ -60,7 +61,7 @@ public class Bulb extends SchemeLayoutDrawable {
         Paints.put(NEEDPAINTID(), SECONDARY_COLOR);
         Paints.put(STROKE, SECONDARY_COLOR, 1, Paint.Style.STROKE);
         Paints.put(MAINPAINTID(), MAIN_COLOR);
-        Paints.put(TEXT, Consts.Colors.WHITE, scaledInt(16), Consts.detailFont);
+        Paints.put(TEXT, Palette.get().getAnti(Palette.Gradiation.LUMOUS), scaledFrom480Int(16), Consts.detailFont);
     }
 
     private String MAINPAINTID() {
@@ -89,7 +90,7 @@ public class Bulb extends SchemeLayoutDrawable {
 
         if(!needHidden && need > 0) {
             canvas.drawCircle(x+size/2+5, y+size/2+5, needSize, Paints.get(NEEDPAINTID(), alpha()/2));
-            canvas.drawText(Integer.toString(need), x+(size/2)+4, y+(size/2)+scaledInt(8), Paints.get(TEXT, alpha()));
+            canvas.drawText(Integer.toString(need), x+(size/2)+4, y+(size/2)+ scaledFrom480Int(8), Paints.get(TEXT, alpha()));
         }
 
         //if(!needHidden && orbitantForward()) drawOrbitants(canvas, x, y, size, Paints.get(NEEDPAINTID(), alpha()));
@@ -209,9 +210,9 @@ public class Bulb extends SchemeLayoutDrawable {
     }
 
     int baseColor = SECONDARY_COLOR;
-    int saturationColor = Consts.Colors.MATERIAL_GREEN;
-    int underSaturationColor = Consts.Colors.MATERIAL_YELLOW;
-    int overSaturationColor = Consts.Colors.MATERIAL_RED;
+    int saturationColor = Palette.get().getMain(Palette.Gradiation.NORMAL);
+    int underSaturationColor = Palette.get().getHipo();
+    int overSaturationColor = Palette.get().getNega();
 
 
     private int saturationTime = 500;
@@ -221,19 +222,12 @@ public class Bulb extends SchemeLayoutDrawable {
         updateOpacity();
         int redvalue, greenvalue, bluevalue;
 
-        int baseRed = Color.red(baseColor);
+        int baseRed   = Color.red(baseColor);
+        int baseBlue  = Color.blue(baseColor);
         int baseGreen = Color.green(baseColor);
-        int baseBlue = Color.blue(baseColor);
 
 
         if(saturationNotified && getTimeElapsed(SATURATED) < saturationTime) {
-           /* size = (int) valueOfNow(SATURATED, baseSize, 0, 0, saturationTime, -1);
-
-            underSaturationNotified = false;
-            overSaturationNotified = false;*/
-
-
-            //size = (int) (baseSize * halfSineValue(SATURATED, 1.0f, 1.5f));
             size = (int) valueOfNow(SATURATED, baseSize, baseSize*satMultp, 0, saturationTime, AnimType.BOUNCER);
             coreAlpha = (int) valueOfNow(SATURATED, INACTIVE_ALPHA, ACTIVE_ALPHA, 0, saturationTime, AnimType.DEFAULT);
             redvalue   = (int) valueOfNow(SATURATED, Color.red(MAIN_COLOR), Color.red(saturationColor), 0, saturationTime, AnimType.DEFAULT);
@@ -372,7 +366,7 @@ public class Bulb extends SchemeLayoutDrawable {
         opacity = 1;
         isFadingIn = false;
         isFadingOut =false;
-        baseSize = Consts.baseGridSize * 2 / 3;
+        baseSize = Consts.baseGridSize / 2;
         size = baseSize;
         saturationNotified = false;
         underSaturationNotified = false;

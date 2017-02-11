@@ -41,10 +41,10 @@ public class SchemeCreatorLayout extends SchemeLayout {
 
     public SchemeCreatorLayout(Context activity) {
         super(activity);
-        init();
     }
 
-    private void init() {
+    protected void init() {
+        super.init();
         getHolder().addCallback(this);
         phase = Phase.USER_PLAYING;
         thread = new MainThread(getHolder(), this);
@@ -149,7 +149,7 @@ public class SchemeCreatorLayout extends SchemeLayout {
                                     grid.toggleOnTap(rawPoint);
                                     reset();
                                     break;
-                                case ERASE:
+                                case STRONG_ERASE:
                                     eraseElementAt(normPoint);
                                     break;
                                 case STAR:
@@ -208,7 +208,7 @@ public class SchemeCreatorLayout extends SchemeLayout {
 
         String guy = "";
 
-        Pattern emailPattern = Patterns.EMAIL_ADDRESS; // API level 8+
+        Pattern emailPattern = Patterns.EMAIL_ADDRESS;
         Account[] accounts = AccountManager.get(getActivity()).getAccounts();
         for (Account account : accounts) {
             if (emailPattern.matcher(account.name).matches()) {
@@ -218,10 +218,6 @@ public class SchemeCreatorLayout extends SchemeLayout {
         }
 
         APIHelper.SendDesign(guy, XMLify());
-
-        Integer i = 1;
-        Integer j = 2;
-        i = i+j;
 
 
     }
@@ -258,6 +254,11 @@ public class SchemeCreatorLayout extends SchemeLayout {
         r += "</scheme>";
 
         return r;
+    }
+
+    @Override
+    protected boolean isSpecialWinConditionFulfilled() {
+        return strs.size() == starsPicked() && unwasted();
     }
 
 }

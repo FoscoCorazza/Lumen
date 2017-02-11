@@ -88,4 +88,5 @@ public abstract class Dot {
     public int pixelDistance(Dot dot) {
         return (int) Utils.hypotenuse(pixelX()-dot.pixelX(), pixelY() - dot.pixelY());
     }
+
 }

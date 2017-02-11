@@ -8,6 +8,7 @@ import com.corazza.fosco.lumenGame.geometry.Segment;
 import com.corazza.fosco.lumenGame.geometry.dots.Dot;
 import com.corazza.fosco.lumenGame.helpers.Consts;
 import com.corazza.fosco.lumenGame.helpers.Paints;
+import com.corazza.fosco.lumenGame.helpers.Palette;
 import com.corazza.fosco.lumenGame.schemes.SchemeLayoutDrawable;
 
 /**
@@ -17,11 +18,11 @@ public class Obstructor extends Obstacle {
 
     @Override
     public int getMainColor() {
-        return Consts.Colors.MATERIAL_RED;
+        return Palette.get().getNega();
     }
 
     public static int getColor() {
-        return Consts.Colors.MATERIAL_RED;
+        return Palette.get().getNega();
     }
 
     @Override

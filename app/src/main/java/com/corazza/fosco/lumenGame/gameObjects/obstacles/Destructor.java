@@ -8,6 +8,7 @@ import com.corazza.fosco.lumenGame.geometry.Segment;
 import com.corazza.fosco.lumenGame.geometry.dots.Dot;
 import com.corazza.fosco.lumenGame.helpers.Consts;
 import com.corazza.fosco.lumenGame.helpers.Paints;
+import com.corazza.fosco.lumenGame.helpers.Palette;
 import com.corazza.fosco.lumenGame.schemes.SchemeLayoutDrawable;
 
 /**
@@ -17,7 +18,7 @@ public class Destructor extends Obstacle {
 
     @Override
     public int getMainColor() {
-        return Consts.Colors.MATERIAL_YELLOW;
+        return Palette.get().getHipo();
     }
 
     @Override

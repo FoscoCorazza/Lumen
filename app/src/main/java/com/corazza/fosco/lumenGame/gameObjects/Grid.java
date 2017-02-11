@@ -1,11 +1,13 @@
 package com.corazza.fosco.lumenGame.gameObjects;
 
 import android.graphics.Canvas;
+import android.graphics.Paint;
 
 import com.corazza.fosco.lumenGame.geometry.dots.Dot;
 import com.corazza.fosco.lumenGame.geometry.dots.GridDot;
 import com.corazza.fosco.lumenGame.geometry.dots.PixelDot;
 import com.corazza.fosco.lumenGame.helpers.Paints;
+import com.corazza.fosco.lumenGame.helpers.Palette;
 import com.corazza.fosco.lumenGame.schemes.SchemeLayoutDrawable;
 import com.corazza.fosco.lumenGame.helpers.Consts;
 import com.corazza.fosco.lumenGame.helpers.Utils;
@@ -17,6 +19,7 @@ import java.util.List;
 public class Grid extends SchemeLayoutDrawable {
 
     private static final String MAINPAINT = "GRIDMAINPNT";
+    private static final String SECOPAINT = "GRIDSECOPNT";
     private static final int CENTER = 1;
     private static final int SIZE = 0;
     private static HashSet<Dot> FILLED = new HashSet<>();
@@ -181,7 +184,8 @@ public class Grid extends SchemeLayoutDrawable {
 
     @Override
     protected void initPaints() {
-        Paints.put(MAINPAINT, 0xEEFFFFFF);
+        Paints.put(MAINPAINT, Palette.get().getAnti(Palette.Gradiation.LUMOUS));
+        Paints.put(SECOPAINT, Palette.get().getAnti(Palette.Gradiation.BRIGHT), 1, Paint.Style.STROKE);
     }
 
     // Disegno
@@ -190,14 +194,14 @@ public class Grid extends SchemeLayoutDrawable {
             case FILLED:
                 for (int x = gridSize; x <= Consts.W-gridSize; x += gridSize) {
                     for (int y = gridSize*VOFFSET; y <= Consts.H-gridSize; y += gridSize) {
-                        canvas.drawCircle(x, y, Consts.dotSize, Paints.get(MAINPAINT, alpha()));
+                        renderDot(canvas,x,y);
                     }
                 }
                 break;
             case HALF_FILLED:
                 for (int x = gridSize; x <= Consts.W-gridSize; x += gridSize*2) {
                     for (int y = gridSize*VOFFSET; y <= Consts.H-gridSize; y += gridSize*2) {
-                        canvas.drawCircle(x, y, Consts.dotSize, Paints.get(MAINPAINT, alpha()));
+                        renderDot(canvas,x,y);
                     }
                 }
                 break;
@@ -205,12 +209,17 @@ public class Grid extends SchemeLayoutDrawable {
             default:
                 HashSet<Dot> _dots = new HashSet<>(dots);
                 for (Dot dot : _dots) {
-                    float x = dot.pixelX(), y = dot.pixelY();
-                    canvas.drawCircle(x, y, Consts.dotSize, Paints.get(MAINPAINT, alpha()));
+                    int x = (int) dot.pixelX(), y = (int) dot.pixelY();
+                    renderDot(canvas, x, y);
                 }
                 break;
         }
 
+    }
+
+    private void renderDot(Canvas canvas, int x, int y) {
+        canvas.drawCircle(x, y, Consts.dotSize+6, Paints.get(SECOPAINT, alpha()/4));
+        canvas.drawCircle(x, y, Consts.dotSize, Paints.get(MAINPAINT, alpha()));
     }
 
 

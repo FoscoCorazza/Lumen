@@ -9,6 +9,7 @@ import com.corazza.fosco.lumenGame.geometry.dots.Dot;
 import com.corazza.fosco.lumenGame.geometry.dots.PixelDot;
 import com.corazza.fosco.lumenGame.helpers.AnimType;
 import com.corazza.fosco.lumenGame.helpers.Paints;
+import com.corazza.fosco.lumenGame.helpers.Palette;
 import com.corazza.fosco.lumenGame.schemes.SchemeLayoutDrawable;
 import com.corazza.fosco.lumenGame.schemes.schemeLayout.SchemeLayout;
 import com.corazza.fosco.lumenGame.geometry.Segment;
@@ -69,9 +70,9 @@ public class Lumen extends SchemeLayoutDrawable {
 
     @Override
     protected void initPaints() {
-        Paints.put(DETAIL, Consts.Colors.WHITE);
-        Paints.put(BACKGROUND, Consts.Colors.MATERIAL_GREEN);
-        Paints.put(SECONDARY, Consts.Colors.MATERIAL_GREEN_DARK);
+        Paints.put(DETAIL, Palette.get().getAnti(Palette.Gradiation.LUMOUS));
+        Paints.put(BACKGROUND, Palette.get().getMain(Palette.Gradiation.NORMAL));
+        Paints.put(SECONDARY, Palette.get().getMain(Palette.Gradiation.GLOOMY));
     }
 
     public void render(Canvas canvas) {

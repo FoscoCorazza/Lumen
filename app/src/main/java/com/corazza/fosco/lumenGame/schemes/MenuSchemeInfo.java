@@ -37,8 +37,7 @@ public class MenuSchemeInfo  {
         layout.setName(name);
         layout.setGrid(grid);
         layout.setPath(path != null ? path : new Path(new ArrayList<Line>()));
-        layout.setLevels(levels);
-        layout.setButtons();
+        layout.setLevels();
         return layout;
     }
 }

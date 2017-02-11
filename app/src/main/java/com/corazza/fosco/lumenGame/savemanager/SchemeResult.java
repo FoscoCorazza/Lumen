@@ -6,13 +6,15 @@ package com.corazza.fosco.lumenGame.savemanager;
 public class SchemeResult {
     private String code;
     private int stars;
-    private int punteggio;
+    private boolean unwasted;
+    private boolean perfect;
     private boolean sbloccato;
 
-    public SchemeResult(String code, int stars, int punteggio, boolean sbloccato) {
+    public SchemeResult(String code, int stars, boolean unwasted, boolean perfect, boolean sbloccato) {
         this.code = code;
         this.stars = stars;
-        this.punteggio = punteggio;
+        this.unwasted = unwasted;
+        this.perfect = perfect;
         this.sbloccato = sbloccato;
     }
 
@@ -28,32 +30,23 @@ public class SchemeResult {
         return stars;
     }
 
-    public void setStars(int stars) {
-        this.stars = stars;
-    }
-
-    public int getPunteggio() {
-        return punteggio;
-    }
-
-    public void setPunteggio(int punteggio) {
-        this.punteggio = punteggio;
-    }
 
     static SchemeResult fromString(String string) {
         String[] strings = string.split("\\.");
-        if(strings.length != 4)  return null;
-        return new SchemeResult(strings[0], Integer.parseInt(strings[1]), Integer.parseInt(strings[2]), "true".equals(strings[3]));
+        if(strings.length != 5)  return null;
+
+        return new SchemeResult(strings[0],
+                Integer.parseInt(strings[1]),
+                "true".equals(strings[2]),
+                "true".equals(strings[3]),
+                "true".equals(strings[4]));
     }
 
     @Override
     public String toString() {
-        return code + "." + stars + "." + punteggio + "." + sbloccato;
+        return code + "." + stars + "." + unwasted + "." + perfect + "." + sbloccato;
     }
 
-    public boolean isUnlocked() {
-        return sbloccato;
-    }
 
     public boolean isSbloccato() {
         return sbloccato;
@@ -61,5 +54,9 @@ public class SchemeResult {
 
     public void setSbloccato(boolean sbloccato) {
         this.sbloccato = sbloccato;
+    }
+
+    public int getTotal() {
+        return stars + (unwasted ? 1:0) + (perfect?1:0);
     }
 }

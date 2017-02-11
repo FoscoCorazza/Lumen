@@ -31,6 +31,7 @@ import com.corazza.fosco.lumenGame.gameObjects.obstacles.Obstacle;
 import com.corazza.fosco.lumenGame.gameObjects.obstacles.Obstructor;
 import com.corazza.fosco.lumenGame.geometry.Radical;
 import com.corazza.fosco.lumenGame.geometry.dots.Dot;
+import com.corazza.fosco.lumenGame.geometry.dots.GridDot;
 import com.corazza.fosco.lumenGame.geometry.dots.PixelDot;
 import com.corazza.fosco.lumenGame.helpers.AnimType;
 import com.corazza.fosco.lumenGame.geometry.Line;
@@ -38,7 +39,9 @@ import com.corazza.fosco.lumenGame.geometry.Path;
 import com.corazza.fosco.lumenGame.geometry.Segment;
 import com.corazza.fosco.lumenGame.helpers.Consts;
 import com.corazza.fosco.lumenGame.helpers.MessagesHelper;
+import com.corazza.fosco.lumenGame.helpers.Paints;
 import com.corazza.fosco.lumenGame.helpers.Phase;
+import com.corazza.fosco.lumenGame.helpers.SoundsHelper;
 import com.corazza.fosco.lumenGame.helpers.Utils;
 import com.corazza.fosco.lumenGame.savemanager.SaveFileManager;
 import com.corazza.fosco.lumenGame.savemanager.SchemeResult;
@@ -52,14 +55,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.StringTokenizer;
 
 public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback, Lumen.SchemeLayoutListener, Button.ButtonListener {
 
 
     private static final int MAX_NEED = 10;
     protected MainThread thread;
+    private boolean leavingViaIntent = false;
 
     // Oggetti di gioco.
 
@@ -80,7 +82,6 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
 
     private HashSet<SchemeLayoutDrawable> drawableCollection = new HashSet<>();
 
-
     // Variabili di gioco.
 
     protected boolean touchEnabled    = true;
@@ -89,8 +90,10 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
     protected String  code;
     private Radical minDist = Radical.Zero;
     protected String name;
-    private int satisfiedBulbs = 0;
     private boolean showLength = true;
+    private String debugLabel = "";
+    private boolean eraseEnabled = false;
+    private int wastedLums = 0;
 
     // Costruttori e Inizializzatori.
     public SchemeLayout(Context activity) {
@@ -98,7 +101,7 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
         init();
     }
 
-    private void init() {
+    protected void init() {
         getHolder().addCallback(this);
         phase = Phase.USER_PLAYING;
         thread = new MainThread(getHolder(), this);
@@ -110,6 +113,10 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
         collect(hud1, bckg, obst, strs, lums, hud2, ends);
 
         setOnTouchListener(getSegmentCreator());
+
+        android.widget.FrameLayout.LayoutParams params = new android.widget.FrameLayout.LayoutParams(Consts.W, Consts.H);
+        setLayoutParams(params);
+        wastedLums = 0;
     }
 
     protected void collect(SchemeLayoutDrawable... drawables) {
@@ -139,19 +146,19 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
 
     public void setGrid(Collection<Dot> points) {
         grid = new Grid(points);
-        ends.setGrid(grid);
+        //ends.setGrid(grid);
         collect(grid);
     }
 
     public void setGrid(Grid.FillType fillType) {
         grid = new Grid(fillType);
-        ends.setGrid(grid);
+        //ends.setGrid(grid);
         collect(grid);
     }
 
     public void setGrid(Grid grid) {
         this.grid = grid;
-        ends.setGrid(grid);
+        //ends.setGrid(grid);
         grid.renew();
         collect(grid);
     }
@@ -194,8 +201,6 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
                 putDeflector(pair.first, pair.second);
     }
 
-
-
     public List<Obstructor> getObstructors(){
         List<Obstructor> r = new ArrayList<>();
         if(obst != null)
@@ -212,6 +217,7 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
     // Gestione del movimento dei Lumen
     public void start() {
         if(phase == Phase.USER_PLAYING) {
+            SoundsHelper.getInstance().play_split(getActivity());
             phase = Phase.LUMEN_PLAYING;
             getMainLumen().setTravelLength(new Radical());
             animate(getMainLumen(), null, 0);
@@ -252,12 +258,14 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
                         for(Lumen l : lums) if(l.isActive()) otherActiveLumen = true;
                         for(Bulb b : blbs) if(!b.equals(bulb) && !b.isSaturated()) won = false;
 
-                        if(won) {
+                        if(won && isSpecialWinConditionFulfilled()) {
+                            SoundsHelper.getInstance().play_bulb(getActivity());
                             bulb.notifySaturation(this, true);
-                            softStop();
+                            softStop(won);
                         } else if (otherActiveLumen){
                             bulb.notifySaturation(this, false);
                         } else {
+                            SoundsHelper.getInstance().play_error(getActivity());
                             bulb.notifyUnderSaturation();
                             onStopButtonClick();
                         }
@@ -272,6 +280,9 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
 
             // Controllo se l'attuale Lume ha finito la sua corsa.
             } else if (next.size() == 0) {
+                // Qui ci sono i wasted lumen.
+                // TODO: Animazione e suono.
+                wastedLums++;
                 fadeOff(lumen);
 
             // Controllo se non ho superato la quantità massima di Lumes.
@@ -279,9 +290,9 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
                 Lumen lumenToAnimate;
 
                 //Controllo che esista già un Lumen che, nello stesso momento, faccia questo specifico split.
+                int splitterCount = 0;
                 for(int i = 0; i < next.size(); i++){
                     boolean commonFateLumenFound = false;
-                    Line.Direction futureDirection = next.get(i).suggestDirection(lumen);
                     List<Lumen> list = lums.getRawListCopy();
                     for(Lumen l : list){
 
@@ -292,6 +303,7 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
 
                         if (headingOnMe  && differentLumen && sameDistance && differentSegment) {
                             // Ho trovato un lumen diverso da se stesso con lo stesso fato: quindi non lo faccio partire.
+                            SoundsHelper.getInstance().play_unite(getActivity());
                             commonFateLumenFound = true;
                             break;
                         }
@@ -303,6 +315,14 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
 
                         long duration = ((long) (next.get(i).length().pixelLength() / lumenToAnimate.getSpeed())) - TTR;
                         lumenToAnimate.startAnimation(next.get(i), duration);
+
+                        // Conto gli split:
+                        splitterCount++;
+                        if(splitterCount==2 && !lumenToAnimate.position.equals(spnt)){
+                            // Io voglio controllare solo al SECONDO lumen splittato:
+                            // Al terzo split ho giá fatto qualunque azione io voglia fare.
+                            SoundsHelper.getInstance().play_split(getActivity());
+                        }
                     }
                     lums.remove(lumen);
                 }
@@ -313,6 +333,10 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
             }
 
         }
+    }
+
+    protected boolean isSpecialWinConditionFulfilled() {
+        return true;
     }
 
     private boolean nearEnough(Dot one, Dot two) {
@@ -344,6 +368,46 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
         return new SegmentCreatorListener(this);
     }
 
+    protected OnTouchListener getSegmentEraser() {
+        return new OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View view, MotionEvent event) {
+                boolean hud1Touched = hud1.onTouch(event);
+                boolean hud2Touched = hud2.onTouch(event);
+                if (phase != Phase.USER_PLAYING || !touchEnabled || hud1Touched || hud2Touched) return true;
+                view.getParent().requestDisallowInterceptTouchEvent(true);
+                PixelDot rawPoint = new PixelDot(event.getRawX(),  event.getRawY());
+                GridDot normPoint = grid.nearest(rawPoint).gridDot();
+
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_MOVE:
+                        SoundsHelper.getInstance().play_eraser(getActivity());
+                        eraseElementAt(normPoint);
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        SoundsHelper.getInstance().stop_eraser();
+                        break;
+
+                }
+
+                return true;
+            }
+
+            private void eraseElementAt(GridDot dot) {
+                if(path != null){
+                    Segment segm = path.getSegments().elementIn(dot);
+                    if(segm != null) {
+                        path.remove(segm);
+                        flatten();
+                        split();
+                    }
+                }
+            }
+        };
+    }
+
     // Callback dei Bottoni
     public void onStartButtonClick(){
         hud1.setButtonsEnabled(false);
@@ -369,6 +433,13 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
     public void onUndoButtonClick(){
         if(path != null) path.undo();
         updateMinDist();
+    }
+
+    public void onEraseButtonClick(){
+        eraseEnabled = !eraseEnabled;
+        hud1.setButtonActivated(Hud.ERASE, eraseEnabled);
+
+        setOnTouchListener(eraseEnabled ? getSegmentEraser() : getSegmentCreator());
     }
 
     public void onModeButtonClick() {
@@ -403,8 +474,7 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
     }
 
     public void hardStop() {
-        satisfiedBulbs = 0;
-        softStop();
+        softStop(false);
         unpickStars();
         setMainLumen(spnt);
         for(Bulb bulb : blbs.getRawListCopy()){
@@ -412,7 +482,8 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
         }
     }
 
-    public void softStop(){
+    public void softStop(boolean won){
+        wastedLums = won ? wastedLums : 0;
         while (lums.size() > 0) {
             getMainLumen().fadeOff(false);
             lums.remove(getMainLumen());
@@ -512,6 +583,10 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
                 render(canvas, ends);
             }
 
+            if(Consts.DEBUG){
+                canvas.drawText(debugLabel, 10,30, Paints.TextPaint);
+            }
+
         }
     }
 
@@ -544,6 +619,7 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
     }
 
     public void startActivity(Intent intent){
+        leavingViaIntent = true;
         MainThread.setRunning(false);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         getContext().startActivity(intent);
@@ -560,6 +636,12 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
         i.putExtra(getContext().getString(R.string.schemeToLoad), getCode());
         startActivity(i);
     }
+
+    private void toScheme(String code) {
+        leavingViaIntent = true;
+        MainActivity.play(getActivity(), code);
+    }
+
 
     public DList<Bulb> getBulbs() {
         return blbs;
@@ -578,10 +660,13 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
 
 
     public void saturationNotified() {
-        SaveFileManager.writeScheme(getContext(), new SchemeResult(code, starsPicked(), 100, true));
+        boolean w = wastedLums == 0;
+        boolean s = starsPicked() == strs.size();
+        SaveFileManager.writeScheme(getContext(), new SchemeResult(code, starsPicked(), w, w && s, true));
 
         phase = Phase.COMPLETING_TRANSITION;
-        ends.setStarsValue(starsPicked(), strs.size() + getBulbs().size());
+        ends.setStarsValue(starsPicked(), strs.size());
+        ends.setWastedLums(wastedLums);
 
         notifyFadeOutToEverything();
         hud2.notifyFadeIn();
@@ -589,22 +674,27 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
         path.notifyTextFadeOut();
     }
 
+
     private void notifyFadeOutToEverything() {
+        strs.notifyFadeOut();
+        blbs.notifyFadeOut();
+        path.notifyFadeOut();
+        obst.notifyFadeOut();
+
         grid.notifyFadeOut();
         lums.notifyFadeOut();
         hud1.notifyFadeOut();
         if(tost != null) tost.notifyFadeOut();
     }
 
-    private int starsPicked() {
-        int r = getBulbs().size();
+    protected int starsPicked() {
+        int r = 0;
         for(Star star: strs) if (star.isPicked()) r++;
         return r;
     }
 
     public void setCode(String code) {
         this.code = code;
-        if(hud1 != null) hud1.updateVisibility(this);
     }
 
     public String getCode() {
@@ -653,6 +743,9 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
         obst.remove(o);
     }
 
+    public boolean isLeavingViaIntent() {
+        return leavingViaIntent;
+    }
 
     public void setToast() {
         String s = Consts.getString(getContext(), "LevelString" + getCode());
@@ -671,6 +764,7 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
         for(Star s : strs){
             if(!s.isPicked() && s.gamma != null && nearEnough(s.gamma, sender.position))
             {
+                SoundsHelper.getInstance().play_star(getActivity());
                 s.pick();
             }
         }
@@ -684,7 +778,7 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
                 case START: onStartButtonClick(); break;
                 case RESET: onResetButtonClick(); break;
                 case STOP:  onStopButtonClick();  break;
-                case UNDO:  onUndoButtonClick();  break;
+                case ERASE: onEraseButtonClick(); break;
                 case BACK:  onBackButtonClick();  break;
                 case MODE:  onModeButtonClick();  break;
             }
@@ -699,7 +793,7 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
 
     private void onRedoButtonClick() {
         MainThread.setRunning(false);
-        MainActivity.play(getActivity(), code);
+        toScheme(code);
     }
 
     private void onMenuButtonClick() {
@@ -716,14 +810,14 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
                 toMenu();
             }
         } else {
-            MainActivity.play(getActivity(), code);
+            toScheme(code);
         }
     }
 
     private String nextLevelCode() {
         try {
-            String newCode = String.format("%03d", Integer.parseInt(getCode()) + 1);
-            if(Consts.getSchemeLayout(newCode, new SchemeLayout(getContext())) != null) return newCode;
+            String newCode = Utils.nextCode(getCode());
+            if(Consts.getSchemeLayout(newCode, new ExtendedSchemeLayout(getContext())) != null) return newCode;
             return null;
         } catch (Exception e) {
             return null;
@@ -740,11 +834,6 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
 
     public Activity getActivity() {
         return (Activity) getContext();
-    }
-
-    public boolean hasSecondaryButtons() {
-        String[] onlyPrimaryLevels = {"000", "001", "002", "003"};
-        return !Arrays.asList(onlyPrimaryLevels).contains(code);
     }
 
     public Grid getGrid() {
@@ -769,5 +858,48 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
 
     public boolean isShowLength() {
         return showLength;
+    }
+
+    public void setDebugLabel(Object s) {
+        //Utils.crash();
+
+        debugLabel = s != null ? s.toString() : "";
+    }
+
+    public void flatten() {
+        Segment s1 = null, s2 = null, merge = null;
+        List<Segment> lines = path.getSegments();
+        for (int i = 0; i < lines.size()-1; i++) {
+            s1 =  lines.get(i);
+            for (int j = i+1; j < lines.size(); j++) {
+                s2 = lines.get(j);
+
+                // Per ogni coppia di segmenti, provo a mergerli
+                merge = s1.merge(s2);
+                if(merge != null) break;
+
+                merge = null;
+            }
+            if(merge != null) break;
+        }
+        if(merge != null){
+            path.remove(s1);
+            path.remove(s2);
+            path.add(merge);
+            flatten();
+        }
+    }
+
+    public void split() {
+        List<Line> splitted = path.splitAt(getMainLumen().position);
+        for(Bulb bulb : getBulbs()) {
+            splitted = path.splitAt(splitted, bulb.position);
+        }
+        path.splitAt(splitted, grid);
+    }
+
+
+    public boolean unwasted(){
+        return wastedLums == 0;
     }
 }

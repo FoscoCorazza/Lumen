@@ -3,6 +3,10 @@ package com.corazza.fosco.lumenGame.gameObjects.huds;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.ColorFilter;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
 import android.view.MotionEvent;
 
@@ -12,6 +16,7 @@ import com.corazza.fosco.lumenGame.geometry.dots.PixelDot;
 import com.corazza.fosco.lumenGame.helpers.AnimType;
 import com.corazza.fosco.lumenGame.helpers.Consts;
 import com.corazza.fosco.lumenGame.helpers.Paints;
+import com.corazza.fosco.lumenGame.helpers.Palette;
 import com.corazza.fosco.lumenGame.helpers.Utils;
 import com.corazza.fosco.lumenGame.schemes.SchemeLayoutDrawable;
 import com.corazza.fosco.lumenGame.schemes.schemeLayout.SchemeLayout;
@@ -20,6 +25,7 @@ public class Button extends SchemeLayoutDrawable {
 
     private static final String MAINPAINT = "BTTNMAIN";
     private static final String SECONDARY = "BTTNSECOND";
+    private static final String IMGEPAINT = "BTTNIMAGE";
 
     private Bitmap image;
 
@@ -55,7 +61,7 @@ public class Button extends SchemeLayoutDrawable {
         return  action == Action.NEED || action == Action.LUMEN ||
                 action == Action.STAR || action == Action.BULB ||
                 action == Action.OBST || action == Action.HIDE ||
-                action == Action.DOTS || action == Action.ERASE ||
+                action == Action.DOTS || action == Action.STRONG_ERASE ||
                 action == Action.GRID_H || action == Action.GRID_W;
     }
 
@@ -74,7 +80,7 @@ public class Button extends SchemeLayoutDrawable {
     public enum Action {
         START, RESET, BACK, STOP, UNDO, MODE, NEXT,
         REDO, NEED, LUMEN, STAR, BULB, OBST, HIDE,
-        DOTS, GRID_H, GRID_W, ERASE, MENU}
+        DOTS, GRID_H, GRID_W, ERASE, MENU, STRONG_ERASE}
 
     public Button(int image, Dot position, SchemeLayout schemeLayout, Action action, boolean pivotInCenter) {
         super(position);
@@ -88,8 +94,11 @@ public class Button extends SchemeLayoutDrawable {
 
     @Override
     protected void initPaints() {
-        Paints.put(MAINPAINT, Consts.Colors.MATERIAL_BLACK);
-        Paints.put(SECONDARY, 0xff000000);
+        Paints.put(MAINPAINT, Palette.get().getBack(Palette.Gradiation.BRIGHT));
+        Paints.put(SECONDARY, Palette.get().getBack(Palette.Gradiation.DARKKK));
+        Paints.put(IMGEPAINT, Palette.get().getBack(Palette.Gradiation.DARKKK));
+        ColorFilter filter = new PorterDuffColorFilter(Palette.get().getAnti(Palette.Gradiation.NORMAL), PorterDuff.Mode.SRC_IN);
+        Paints.get(IMGEPAINT, 255).setColorFilter(filter);
     }
 
     public void render(Canvas canvas) {
@@ -109,7 +118,7 @@ public class Button extends SchemeLayoutDrawable {
 
             canvas.drawCircle(ctx, cty, rad, Paints.get(drawAsPressed ? MAINPAINT : SECONDARY, alpha));
             canvas.drawCircle(ctx, cty - 2, rad, Paints.get(drawAsPressed ? SECONDARY : MAINPAINT, alpha));
-            canvas.drawBitmap(image, ptx, pty, Paints.get(drawAsPressed ? SECONDARY : MAINPAINT, alpha));
+            canvas.drawBitmap(image, ptx, pty, Paints.get(IMGEPAINT, alpha));
             if (isOrbitant()) {
                 canvas.save();
                 canvas.rotate(orbitant, ctx, cty);
@@ -129,7 +138,7 @@ public class Button extends SchemeLayoutDrawable {
     }
 
     public boolean onTouch(MotionEvent event) {
-        boolean onButton = onButton(new PixelDot(event.getRawX(), event.getRawY()));
+        boolean onButton = onButton(new PixelDot(event.getX(), event.getY()));
         int action = event.getAction();
         if(action == MotionEvent.ACTION_MOVE && !onButton) {
             pressed = false;

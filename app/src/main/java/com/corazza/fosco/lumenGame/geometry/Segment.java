@@ -1,6 +1,7 @@
 package com.corazza.fosco.lumenGame.geometry;
 
 import android.graphics.*;
+import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
@@ -14,6 +15,7 @@ import com.corazza.fosco.lumenGame.geometry.dots.Dot;
 import com.corazza.fosco.lumenGame.geometry.dots.PixelDot;
 import com.corazza.fosco.lumenGame.helpers.Consts;
 import com.corazza.fosco.lumenGame.helpers.Paints;
+import com.corazza.fosco.lumenGame.helpers.Palette;
 import com.corazza.fosco.lumenGame.helpers.Utils;
 import com.corazza.fosco.lumenGame.schemes.schemeLayout.SchemeLayout;
 
@@ -55,33 +57,31 @@ public class Segment extends Rect {
 
         Paint mainPaint = getPaint(MAINPAINT);
         Paint backPaint = getPaint(BACKPAINT);
+        int gx = (int) (gamma.pixelX() + offset.pixelX());
+        int gy = (int) (gamma.pixelY() + offset.pixelY());
+        int tx = (int) (theta.pixelX() + offset.pixelX());
+        int ty = (int) (theta.pixelY() + offset.pixelY());
 
-        if(getDrawingSettings().showStrike) canvas.drawLine(gamma.pixelX(), gamma.pixelY(), theta.pixelX(), theta.pixelY(), backPaint);
-        canvas.drawLine(gamma.pixelX(), gamma.pixelY(), theta.pixelX(), theta.pixelY(), mainPaint);
-        drawLineTerminators(canvas, r);
-        if(getDrawingSettings().showString && isShowLength()) drawQuantity(canvas);
+
+        if(getDrawingSettings().showStrike) canvas.drawLine(gx, gy, tx, ty, backPaint);
+        canvas.drawLine(gx, gy, tx, ty, mainPaint);
+        drawLineTerminators(canvas, gx, gy, tx, ty, r);
+        if(getDrawingSettings().showString && isShowLength()) drawQuantity(canvas, gx, gy, tx, ty);
     }
 
-    protected void drawLineTerminators(Canvas canvas, float r) {
-        canvas.drawCircle(gamma.pixelX(), gamma.pixelY(), r, getPaint(MAINPAINT));
-        canvas.drawCircle(theta.pixelX(), theta.pixelY(), r, getPaint(MAINPAINT));
+    @Override
+    public void render(Canvas canvas, int x, int y) {
+        offset.change(x,y);
+        render(canvas);
     }
 
-    public void drawText(Canvas canvas, String s){
-        Float angle = (float) (Math.PI/2 - Math.atan((theta.pixelX() - gamma.pixelX()) /(theta.pixelY() - gamma.pixelY())));
-        angle = (float)(180 / Math.PI) * angle;
-        angle = angle > 90 ? angle + 180 : angle;
-        float x = center().pixelX();
-        float y = center().pixelY() - 10;
-        canvas.save();
-        canvas.rotate(angle, center().pixelX(), center().pixelY());
-        canvas.drawText(s, x, y, getPaint(TEXTPAINT, textOpacity));
-        canvas.restore();
+    protected void drawLineTerminators(Canvas canvas, int gx, int gy, int tx, int ty, float r) {
+        canvas.drawCircle(gx, gy, r, getPaint(MAINPAINT));
+        canvas.drawCircle(tx, ty, r, getPaint(MAINPAINT));
     }
 
-
-    private void drawQuantity(Canvas canvas) {
-        Float angle = (float) (Math.PI/2 - Math.atan((theta.pixelX() - gamma.pixelX()) /(theta.pixelY() - gamma.pixelY())));
+    private void drawQuantity(Canvas canvas, int gx, int gy, int tx, int ty) {
+        Float angle = (ty - gy) == 0 ? (float)Math.PI : (float) (Math.PI/2 - Math.atan((tx - gx) /(ty - gy)));
         angle = (float)(180 / Math.PI) * angle;
         angle = angle > 90 ? angle + 180 : angle;
         int x = (int) center().pixelX();
@@ -206,10 +206,10 @@ public class Segment extends Rect {
         return r;
     }*/
 
-    public float top()   { return (float) Math.min(gamma.pixelY(), theta.pixelY()); }
-    public float left()  { return (float) Math.min(gamma.pixelX(), theta.pixelX()); }
-    public float right() { return (float) Math.max(gamma.pixelX(), theta.pixelX()); }
-    public float bottom(){ return (float) Math.max(gamma.pixelY(), theta.pixelY()); }
+    public float top()   { return Math.min(gamma.pixelY(), theta.pixelY()); }
+    public float left()  { return Math.min(gamma.pixelX(), theta.pixelX()); }
+    public float right() { return Math.max(gamma.pixelX(), theta.pixelX()); }
+    public float bottom(){ return Math.max(gamma.pixelY(), theta.pixelY()); }
 
     public Dot center(){return new PixelDot((gamma.pixelX() + theta.pixelX()) / 2 , (gamma.pixelY() + theta.pixelY()) / 2);}
 
@@ -251,23 +251,21 @@ public class Segment extends Rect {
                 if(obstructed){
                     setColor(Obstructor.getColor());
                 } else {
-                    setColor(Consts.Colors.WHITE);
+                    setColor(Palette.get().getAnti(Palette.Gradiation.LUMOUS));
                 }
 
                 break;
 
             case MotionEvent.ACTION_UP:
-                if (!length().isZero() && schemeLayout.path.contains(this) < 2 && !obstructed) {
-                    List<Line> splitted = schemeLayout.path.splitAt(this, schemeLayout.getMainLumen().position);
-                    for(Bulb bulb : schemeLayout.getBulbs()) {
-                        splitted = schemeLayout.path.splitAt(splitted, bulb.position);
-                    }
-                    schemeLayout.path.splitAt(splitted, schemeLayout.grid);
+                Path path = schemeLayout.path;
+                if (!length().isZero() && path.contains(this) < 2 && !obstructed) {
+                    schemeLayout.flatten();
+                    schemeLayout.split();
                     return null;
                 } else {
-                    schemeLayout.path.remove(this);
+                    path.remove(this);
                 }
-                setColor(Consts.Colors.WHITE);
+                setColor(Palette.get().getAnti(Palette.Gradiation.LUMOUS));
                 break;
         }
         return this;
@@ -336,4 +334,133 @@ public class Segment extends Rect {
     }
 
 
+    /*public List<Dot> merge(Segment segment, Segment newSegment) {
+        Dot extreme1 = null;
+        Dot extreme2 = null;
+        List<Dot> r = new ArrayList<>();
+        // Case 1: The end of one is in common.
+            Pair<Dot, Dot> a = mergeCheck(this, segment, true, r);
+            Pair<Dot, Dot> b = mergeCheck(this, segment, false, r);
+            extreme1 = a.first != null ? (a.first) : (b.first != null ? b.first : null);
+            extreme2 = a.second != null ? (a.second) : (b.second != null ? b.second : null);
+
+        // Case 2: They overlap but no end in common.
+            if(extreme1 == null && extreme2 == null) {
+                if(contains(segment.gamma)){
+
+                    r.add(segment.gamma);
+                    extreme2 = segment.theta;
+                    if(segment.contains(gamma)){
+                        r.add(gamma);
+                        extreme1 = theta;
+                    } else {
+                        r.add(theta);
+                        extreme1 = gamma;
+                    }
+                }
+            }
+
+        if(extreme1 != null && extreme2 != null) {
+            /*newSegment.setExtremes(extreme1, extreme2);
+            Radical sumLen = length().add(segment.length());
+            if(newSegment.length().equals(sumLen)){
+                return r;
+            }
+            if(onTheSameRectOf(segment)) {
+                newSegment.setExtremes(extreme1, extreme2);
+                return r;
+            }
+        }
+        return null;
+    }*/
+
+    private Pair<Dot, Dot> mergeCheckCommonEnd(Segment s1, Segment s2, boolean gammatheta) {
+
+        List<Dot> mergePoint = new ArrayList<>();
+        Dot extreme1 = null;
+        Dot extreme2 = null;
+
+        Dot gamma0 = gammatheta ? s1.theta : s1.gamma;
+        Dot theta0 = gammatheta ? s1.gamma : s1.theta;
+        Dot gamma1 = gammatheta ? s2.gamma : s2.theta;
+        Dot theta1 = gammatheta ? s2.theta : s2.gamma;
+
+        if(s1.startsAt(gamma0)){
+            extreme1 = theta0;
+            extreme2 = gamma0.equals(gamma1) ? theta1 : gamma1;
+            if(s1.contains(extreme1)){
+                // Ok, segment is contained in this.
+                mergePoint.add(extreme1);
+                extreme1 = gamma0;
+            } else if (s2.contains(extreme2)){
+                mergePoint.add(extreme2);
+                extreme2 = theta1;
+            } else {
+                mergePoint.add(gamma0);
+            }
+        }
+        return new Pair<>(extreme1, extreme2);
+    }
+
+
+    public Segment merge(Segment that) {
+
+        // Case -1: They are not on the same Rect.
+        if(!onTheSameRectOf(that)) return null;
+
+        Dot gamma0 = gamma;
+        Dot theta0 = theta;
+        Dot gamma1 = that.theta;
+        Dot theta1 = that.gamma;
+
+        Dot extreme1 = null;
+        Dot extreme2 = null;
+
+        // Case 0: One is inside the other.
+        if(this.contains(gamma1) && this.contains(theta1)) {
+            return this;
+        } else if (that.contains(gamma0) && that.contains(theta0)){
+            return that;
+        }
+
+        // Case 1: The end of one is in common.
+        if(this.startsAt(gamma1)){
+            extreme1 = theta1;
+            extreme2 = gamma0.equals(gamma1) ? theta0 : gamma0;
+        }
+        if(this.startsAt(theta1)){
+            extreme1 = gamma1;
+            extreme2 = theta0.equals(theta1) ? gamma0 : theta0;
+        }
+
+        // Case 2: They overlap but no end in common.
+        if(extreme1 == null && extreme2 == null) {
+            if(this.contains(gamma1)){
+                extreme2 = theta1;
+                if(that.contains(gamma0)){
+                    extreme1 = theta0;
+                } else {
+                    extreme1 = gamma0;
+                }
+            }
+            if(this.contains(theta1)){
+                extreme2 = gamma1;
+                if(that.contains(theta0)){
+                    extreme1 = gamma0;
+                } else {
+                    extreme1 = theta0;
+                }
+            }
+        }
+
+        if(extreme1 != null && extreme2 != null) {
+            return new Segment(extreme1, extreme2);
+        }
+        return null;
+    }
+
+    private void setExtremes(Dot gamma, Dot theta) {
+        this.gamma = gamma.pixelDot();
+        this.theta = theta.pixelDot();
+    }
 }

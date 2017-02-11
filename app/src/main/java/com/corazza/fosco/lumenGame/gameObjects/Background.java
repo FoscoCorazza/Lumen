@@ -2,19 +2,21 @@ package com.corazza.fosco.lumenGame.gameObjects;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Region;
 
-import com.corazza.fosco.lumenGame.geometry.dots.Dot;
 import com.corazza.fosco.lumenGame.geometry.dots.PixelDot;
 import com.corazza.fosco.lumenGame.helpers.AnimType;
 import com.corazza.fosco.lumenGame.helpers.Consts;
 import com.corazza.fosco.lumenGame.helpers.Paints;
+import com.corazza.fosco.lumenGame.helpers.Palette;
 import com.corazza.fosco.lumenGame.schemes.SchemeLayoutDrawable;
 
 import java.util.ArrayList;
 import java.util.Random;
 
 import static com.corazza.fosco.lumenGame.helpers.Consts.*;
-import static com.corazza.fosco.lumenGame.helpers.Utils.scaled;
+import static com.corazza.fosco.lumenGame.helpers.Utils.scaledFrom480;
 
 /**
  * Created by Simone on 05/06/2016.
@@ -22,26 +24,20 @@ import static com.corazza.fosco.lumenGame.helpers.Utils.scaled;
 public class Background extends SchemeLayoutDrawable {
 
     private static final String BACKGROUND = "MAINBACKGROUNDCOLOR";
-    ArrayList<Layer> layers = new ArrayList<>();
-    int lastColorIndex = 0;
-    int lastLayerId = 0;
+    private ArrayList<Layer> layers = new ArrayList<>();
+    private int lastColorIndex = 0;
+    private int lastLayerId = 0;
+    private double percentageModifier = 0;
 
-    private int[] dark_colors = {
-            0xff212829,
-            0xff283232,
-            0xff323c3c,
-            0xff3c4646
-    };
 
-    private int[] bright_colors = {
-            0xffDED7D6,
-            0xffD7CDCD,
-            0xffCDC3C3,
-            0xffC3B9B9
-    };
 
     private int[] colors() {
-        return dark_colors;
+        return new int[]{
+                Palette.get().getBack(Palette.Gradiation.LUMOUS),
+                Palette.get().getBack(Palette.Gradiation.BRIGHT),
+                Palette.get().getBack(Palette.Gradiation.NORMAL),
+                Palette.get().getBack(Palette.Gradiation.GLOOMY)
+        };
     }
 
     private int colors(int i) {
@@ -78,7 +74,7 @@ public class Background extends SchemeLayoutDrawable {
 
     @Override
     protected void initPaints() {
-        Paints.put(BACKGROUND, Consts.Colors.MATERIAL_BLACK);
+        Paints.put(BACKGROUND, Palette.get().getBack(Palette.Gradiation.DARKKK));
     }
 
     @Override
@@ -86,7 +82,7 @@ public class Background extends SchemeLayoutDrawable {
         canvas.drawRect(0,0,canvas.getWidth(), canvas.getHeight(), Paints.get(BACKGROUND, alpha()));
 
         /*Path path = new Path();
-        path.addCircle(bulb.pixelX(),bulb.pixelY(), 100, Path.Direction.CW);
+        path.addCircle(20, 30, 100, Path.Direction.CW);
         canvas.clipPath(path, Region.Op.DIFFERENCE);*/
 
         for(int i = layers.size()-1; i >= 0; i--){
@@ -94,7 +90,7 @@ public class Background extends SchemeLayoutDrawable {
         }
 
 
-        /*canvas.clipPath(path, Region.Op.UNION);*/
+        //canvas.clipPath(path, Region.Op.UNION);
     }
 
     @Override
@@ -116,6 +112,10 @@ public class Background extends SchemeLayoutDrawable {
         return Paints.get(BACKGROUND, 255);
     }
 
+    public void setPercentageModifier(double percentageModifier) {
+        this.percentageModifier = percentageModifier;
+    }
+
     private class Layer{
         private boolean active = false;
         private Paint paint = new Paint();
@@ -130,9 +130,8 @@ public class Background extends SchemeLayoutDrawable {
         Layer(int layerId, int colorIndex, boolean typeA, int baseOffsetX){
             paint = new Paint();
             paint.setColor(colors(colorIndex));
-            //paint.setShadowLayer(10.0f, 0.0f, 0.0f, 0xFF000000);
             degrees = typeA ? -145 : 145;
-            speed = scaled((new Random().nextInt(5) + 2)) / 100f;
+            speed = scaledFrom480((new Random().nextInt(5) + 2)) / 100f;
 
             this.layerId = layerId;
             this.baseOffsetX = baseOffsetX;
@@ -140,8 +139,8 @@ public class Background extends SchemeLayoutDrawable {
 
         public void render(Canvas canvas) {
             if(active) {
-                float left = offset.pixelX();
-                float top = (H-h)/2;
+                float left = offset.pixelX() + position.pixelX();
+                float top = (H-h)/2 + position.pixelY();
                 float right = left + w;
                 float bottom = top + h;
                 PixelDot center = new PixelDot((left + right) / 2, (top + bottom) / 2);

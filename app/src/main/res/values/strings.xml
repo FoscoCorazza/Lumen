@@ -25,7 +25,8 @@
     <string name="begin">Begin</string>
     <string name="time_begin">time_begin</string>
     <string name="demo">demo</string>
-
-    <!--string name="min_length">•••   %minDist%   •••</string-->
+    <string name="EndLevelAchievment1">Optional light bulbs</string>
+    <string name="EndLevelAchievment2">Unwasted energy</string>
+    <string name="EndLevelAchievment3">Perfect level</string>
 
 </resources>

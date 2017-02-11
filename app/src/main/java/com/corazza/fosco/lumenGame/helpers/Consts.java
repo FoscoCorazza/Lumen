@@ -3,6 +3,8 @@ package com.corazza.fosco.lumenGame.helpers;
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.Typeface;
+import android.os.Build;
+import android.view.Display;
 import android.view.WindowManager;
 
 import com.corazza.fosco.lumenGame.geometry.dots.Dot;
@@ -15,19 +17,22 @@ import com.corazza.fosco.lumenGame.schemes.schemeLayout.MenuSchemeLayout;
 import com.corazza.fosco.lumenGame.schemes.schemeLayout.SchemeLayout;
 import com.corazza.fosco.lumenGame.schemes.SchemeReader;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
+import java.util.TreeMap;
 
-import static com.corazza.fosco.lumenGame.helpers.Utils.scaled;
-import static com.corazza.fosco.lumenGame.helpers.Utils.scaledInt;
+import static com.corazza.fosco.lumenGame.helpers.Utils.scaledFrom480;
+import static com.corazza.fosco.lumenGame.helpers.Utils.scaledFrom480Int;
 
 public class Consts {
 
     public static final boolean DEMO = true;
+    public static final boolean DEBUG = true;
 
     //Sizes
     public static int    baseGridSize;
-    public static int    hStep = 8;
-    public static int    vStep = 8;
+    public static int    hStep = 6;
+    public static int    vStep = 6;
     public static float  lineW;
     public static int    dotSize;
     public static double lumenSpeed;
@@ -37,8 +42,6 @@ public class Consts {
     public static String TITLE = "LUMEN";
     public static String PRETITLE = "Fosco Corazza's";
 
-    public static String EndLevelString1 = "EndLevelString1";
-    public static String EndLevelString2 = "EndLevelString2";
 
     public static final float INFINITE   = 1993014007;
     public static final Dot COINCIDENT = new PixelDot(1993, 1407);
@@ -48,30 +51,41 @@ public class Consts {
     public static int lumenMax = 100;
     public static int W, H;
     public static Typeface detailFont;
-    public static HashMap<String, SchemeInfo> schemeList;
-    public static HashMap<String, MenuSchemeInfo> menuSchemeList;
+    public static TreeMap<String, SchemeInfo> schemeList;
+    public static TreeMap<String, MenuSchemeInfo> menuSchemeList;
 
     public  static void loadConsts(Context ctx){
         detailFont = Typeface.createFromAsset(ctx.getAssets(), "HelveticaNeue-Thin.otf");
         if(new Point(0,0).equals(screenSize)){
             WindowManager wm = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
-            wm.getDefaultDisplay().getSize(screenSize);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                wm.getDefaultDisplay().getRealSize(screenSize);
+            }else {
+                try {
+                    screenSize.x = (Integer) Display.class.getMethod("getRawWidth").invoke(wm);
+                    screenSize.y = (Integer) Display.class.getMethod("getRawHeight").invoke(wm);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
             baseGridSize = screenSize.x/hStep;
             vStep = screenSize.y/baseGridSize;
         }
         W = screenSize.x;
         H = screenSize.y;
 
-        lineW = scaled(2);
-        dotSize = scaledInt(1);
-        lumenSize = scaledInt(10);
-        lumenSpeed = scaled(0.3f);
-        lineTerminatorRadius = scaled(3);
+        lineW = scaledFrom480(2);
+        dotSize = scaledFrom480Int(1);
+        lumenSize = scaledFrom480Int(10);
+        lumenSpeed = scaledFrom480(0.3f);
+        lineTerminatorRadius = scaledFrom480(3);
 
         if(schemeList == null)
             schemeList = SchemeReader.read(ctx);
         if(menuSchemeList == null)
             menuSchemeList = SchemeReader.readMenu(ctx);
+
+        Paints.initConstPaints();
     }
 
     public static SchemeLayout getSchemeLayout(String name, SchemeLayout base){
@@ -109,18 +123,4 @@ public class Consts {
         }
     }
 
-
-    public class Colors {
-        public static final int WHITE = 0xFFFFFFFF;
-        public static final int MATERIAL_GREY = 0xff374046;
-        public static final int MATERIAL_BLACK = 0XFF242A2E;
-        public static final int MATERIAL_GREEN = 0xFF4CAF50;
-        public static final int MATERIAL_RED = 0xFFf44336;
-        public static final int MATERIAL_BLUE = 0xFF3164F7;
-        public static final int MATERIAL_YELLOW = 0xFFF4E436;
-        public static final int MATERIAL_GREEN_DARK = 0xFF388E3C;
-        public static final int MATERIAL_LIGHT_GREY = 0xFF3C4646;
-        public static final int MATERIAL_LIGHTEST_GREY = 0xFF4C5656;
-        public static final int MATERIAL_WHITE = 0XFFDBD5D1;
-    }
 }

@@ -1,6 +1,7 @@
 package com.corazza.fosco.lumenGame.helpers;
 
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.view.View;
 import android.widget.ImageView;
@@ -53,11 +54,18 @@ public class Utils {
         return min;
     }
 
-    public static float scaled(float value){
+    public static float scaledFrom480(float value){
         return value * W/480f;
     }
-    public static int scaledInt(int value) {
+    public static int scaledFrom480Int(int value) {
         return value * W/480;
+    }
+
+    public static float scaled(float value){
+        return value * W/1080f;
+    }
+    public static int scaledInt(int value) {
+        return value * W/1080;
     }
 
 
@@ -201,4 +209,75 @@ public class Utils {
     public static boolean isNullOrEmpty(String s) {
         return s == null || s.isEmpty();
     }
+
+    public static int crash() {
+        int a = 1;
+        int b = 1;
+        return 1/(a-b);
+    }
+
+    public static boolean isNumeric(String str) {
+        return str.matches("-?\\d+(\\.\\d+)?");
+    }
+
+    public static String nextCode(String code) {
+        return offsetCode(code, 1);
+    }
+
+    public static String prevCode(String code) {
+        return offsetCode(code, -1);
+    }
+
+    private static String offsetCode(String code, int offset) {
+        return String.format("%03d", Integer.parseInt(code) + offset);
+    }
+
+    public static String trimCode(String id) {
+        if(isNumeric(id)){
+            return String.valueOf(Integer.parseInt(id));
+        }
+        return id;
+    }
+
+    public static void drawCenteredText(Canvas canvas, String text, int centerX, int centerY, Paint paint) {
+        float h = paint.descent() - paint.ascent();
+
+
+        String[] splits = text.split("\n");
+        int textY = (int) (centerY+h/4);
+
+        textY -= h*(splits.length-1)/2;
+
+        for (String line : splits) {
+            canvas.drawText(line, centerX, textY, paint);
+            textY += h;
+        }
+    }
+
+    public static void drawCenteredTextWithTextH(Canvas canvas, String text, int centerX, int centerY, Paint paint, float h) {
+        int textY = (int) (centerY+h/4);
+        canvas.drawText(text, centerX, textY, paint);
+    }
+
+    public static boolean intersects(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2) {
+        float xmin = Math.max(x1, x2);
+        float xmax1 = x1 + w1;
+        float xmax2 = x2 + w2;
+        float xmax = Math.min(xmax1, xmax2);
+        if (xmax > xmin) {
+            float ymin = Math.max(y1, y2);
+            float ymax1 = y1 + h1;
+            float ymax2 = y2 + h2;
+            float ymax = Math.min(ymax1, ymax2);
+            if (ymax > ymin) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static int bounds(int i, int min, int max) {
+        return Math.min(Math.max(i, min), max);
+    }
+
 }

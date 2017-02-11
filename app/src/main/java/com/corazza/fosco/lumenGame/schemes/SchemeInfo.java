@@ -129,6 +129,7 @@ public class SchemeInfo {
         return result;
     }
 
-
-
+    public int getStarsTotal() {
+        return stars != null ? stars.size() : 0;
+    }
 }

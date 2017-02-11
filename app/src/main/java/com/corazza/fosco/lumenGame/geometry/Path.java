@@ -1,10 +1,12 @@
 package com.corazza.fosco.lumenGame.geometry;
 import android.graphics.Canvas;
+import android.util.Pair;
 
 import com.corazza.fosco.lumenGame.geometry.dots.Dot;
 import com.corazza.fosco.lumenGame.geometry.dots.GridDot;
 import com.corazza.fosco.lumenGame.helpers.AnimType;
 import com.corazza.fosco.lumenGame.helpers.Utils;
+import com.corazza.fosco.lumenGame.schemes.DList;
 import com.corazza.fosco.lumenGame.schemes.SchemeLayoutDrawable;
 import com.corazza.fosco.lumenGame.gameObjects.Grid;
 
@@ -46,16 +48,29 @@ public class Path extends SchemeLayoutDrawable {
         this.lines = lines;
     }
 
+    public Path() {
+        super();
+        this.lines = new ArrayList<>();
+    }
+
     @Override
     protected void initPaints() {}
 
-    public void render(Canvas canvas){
+    @Override
+    public void render(Canvas canvas, int x, int y){
         List<Line> list = new ArrayList<>(lines);
         for(Line line : list) {
-            line.inherit(this);
-            line.setTextOpacity(text_opacity);
-            line.render(canvas);
+            if(line != null) {
+                line.inherit(this);
+                line.setTextOpacity(text_opacity);
+                line.render(canvas, x, y);
+            }
         }
+    }
+
+    @Override
+    public void render(Canvas canvas){
+        render(canvas, 0,0);
     }
 
     public void remove(Line line) {
@@ -80,10 +95,8 @@ public class Path extends SchemeLayoutDrawable {
         return r;
     }
 
-    public void splitAt(Line splLine, Grid grid) {
-        List<Line> splLines = new ArrayList<>();
-        splLines.add(splLine);
-        splitAt(splLines, grid);
+    public List<Line> splitAt(Dot dot) {
+        return splitAt(lines, dot);
     }
 
     public void splitAt(List<Line> splLines, Grid grid) {
@@ -102,7 +115,7 @@ public class Path extends SchemeLayoutDrawable {
 
         if(lineSplitter != null && somethingChanged){
             lineSplitter.substFrom(lines);
-            splitAt(lineSplitter.getSplits(), grid);
+            splitAt(lines, grid);
         }
         else {
             removeDuplicates();
@@ -296,4 +309,12 @@ public class Path extends SchemeLayoutDrawable {
         }
 
     }
+
+    public DList<Segment> getSegments() {
+        DList<Segment> r = new DList<>();
+        for (Line l : lines) if(l instanceof Segment) r.add((Segment) l);
+        return r;
+    }
+
+
 }

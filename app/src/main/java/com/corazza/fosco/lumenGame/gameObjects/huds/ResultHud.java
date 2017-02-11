@@ -7,7 +7,7 @@ import com.corazza.fosco.lumenGame.geometry.dots.PixelDot;
 import com.corazza.fosco.lumenGame.helpers.Consts;
 import com.corazza.fosco.lumenGame.schemes.schemeLayout.SchemeLayout;
 
-import static com.corazza.fosco.lumenGame.helpers.Utils.scaledInt;
+import static com.corazza.fosco.lumenGame.helpers.Utils.scaledFrom480Int;
 
 /**
  * Created by Simone Chelo on 10/10/2016.
@@ -19,8 +19,8 @@ public class ResultHud extends Hud {
         super(schemeLayout);
         buttons    = new Button[3];
 
-        int h = scaledInt(80);
-        int l = scaledInt(100);
+        int h = scaledFrom480Int(80);
+        int l = scaledFrom480Int(100);
 
         buttons[0] = new Button(
                 R.drawable.scheme_hud_button_next,

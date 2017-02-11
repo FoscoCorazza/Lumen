@@ -9,6 +9,7 @@ import com.corazza.fosco.lumenGame.geometry.dots.Dot;
 import com.corazza.fosco.lumenGame.geometry.dots.PixelDot;
 import com.corazza.fosco.lumenGame.helpers.Paints;
 import com.corazza.fosco.lumenGame.helpers.Consts;
+import com.corazza.fosco.lumenGame.helpers.Palette;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,9 +56,9 @@ public class Rect extends Line {
 
     @Override
     protected void initPaints() {
-        Paints.put(getPaintPrefix() + BACKPAINT, Consts.Colors.MATERIAL_BLACK, Consts.lineW +2, Paint.Style.FILL);
-        Paints.put(getPaintPrefix() + MAINPAINT, Consts.Colors.WHITE, Consts.lineW, Paint.Style.FILL);
-        Paints.put(getPaintPrefix() + TEXTPAINT, Consts.Colors.WHITE,16, Consts.detailFont);
+        Paints.put(getPaintPrefix() + BACKPAINT, Palette.get().getBack(Palette.Gradiation.DARKKK), Consts.lineW +2, Paint.Style.FILL);
+        Paints.put(getPaintPrefix() + MAINPAINT, Palette.get().getAnti(Palette.Gradiation.LUMOUS), Consts.lineW, Paint.Style.FILL);
+        Paints.put(getPaintPrefix() + TEXTPAINT, Palette.get().getAnti(Palette.Gradiation.LUMOUS),16, Consts.detailFont);
     }
 
 

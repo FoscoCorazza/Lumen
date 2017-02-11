@@ -10,7 +10,7 @@ public class MessagesHelper {
     public static void notifyTooManyLumens(Context context){
         //if(!messageOnGoing){
         //    messageOnGoing = true;
-            SoundsHelper.getInstance().play_too_many_lumens(context);
+            //SoundsHelper.getInstance().play_too_many_lumens(context);
             /*Dialog dialog = new Dialog(context);
             dialog.setTitle("No no no, I think something went wrong");
             dialog.show();*/

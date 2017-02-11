@@ -6,42 +6,124 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 
 import com.corazza.fosco.lumenGame.R;
-import com.corazza.fosco.lumenGame.gameObjects.huds.Button;
 import com.corazza.fosco.lumenGame.geometry.dots.Dot;
 import com.corazza.fosco.lumenGame.geometry.dots.GridDot;
 import com.corazza.fosco.lumenGame.geometry.dots.PixelDot;
 import com.corazza.fosco.lumenGame.helpers.Consts;
 import com.corazza.fosco.lumenGame.helpers.Paints;
-import com.corazza.fosco.lumenGame.schemes.schemeLayout.SchemeLayout;
+import com.corazza.fosco.lumenGame.helpers.Palette;
+import com.corazza.fosco.lumenGame.helpers.Utils;
+import com.corazza.fosco.lumenGame.schemes.DList;
 import com.corazza.fosco.lumenGame.schemes.SchemeLayoutDrawable;
 
+import static com.corazza.fosco.lumenGame.helpers.Utils.prevCode;
+import static com.corazza.fosco.lumenGame.helpers.Utils.scaledFrom480Int;
 import static com.corazza.fosco.lumenGame.helpers.Utils.scaledInt;
 
 /**
  * Created by Simone on 14/08/2016.
  */
 public class ResultView extends SchemeLayoutDrawable {
+    protected Context context;
 
     private static final String STROKE = "ENDSCREENSTROKE";
     private static final String TEXT = "ENDSCREENBHTXT";
-    private static final Dot MIN_SIZE = new GridDot(6, 6);
-    private static final Dot MIN_CENTER = new GridDot(4, 7);
-    private static final Dot MAX_SIZE = new GridDot(7, 10);
-    protected int total = 0;
-    protected int picked = 0;
-    protected Context context;
-    private Grid grid;
+    private static final String TEXTD = "ENDSCREENBHTXTD";
+    private static final Dot MIN_SIZE = new GridDot(5, 5);
+    private static final Dot MIN_CENTER = new GridDot(3, 5);
+    private int total = 0;
+    private int picked = 0;
+    private int waste = 0;
+
+    private DList<Star> obulbs = new DList<>();
+    private DList<Star> wasted = new DList<>();
+    private DList<Star> perfct = new DList<>();
+    private DList<Star> result = new DList<>();
 
     public ResultView(Context context) {
         initPaints();
         this.context = context;
         this.opacity = 0;
+
+        setStars();
+
+    }
+
+    private void setStars() {
+        Dot size = MIN_SIZE;
+        Dot center = MIN_CENTER;
+
+        int dist = 80;
+        int apotemaX = (int) (size.pixelX()/2);
+        int apotemaY = (int) (size.pixelY()/2);
+        int f = (int) (size.pixelY() / 10);
+        int cx = (int) center.pixelX(), cy = (int) center.pixelY();
+        int rghtLimit = cx + apotemaX - scaledInt(80) - (new Star(GridDot.Zero).getRadius());
+
+        for(int i = 0; i< 3; i++){
+            obulbs.add(new Star(new PixelDot(rghtLimit - i * dist, cy - apotemaY + 3*f)));
+        }
+
+        wasted.add(new Star(new PixelDot(rghtLimit, cy - apotemaY + 5*f)));
+        perfct.add(new Star(new PixelDot(rghtLimit, cy - apotemaY + 7*f)));
+
+        for(int i = 0; i < 5; i++){
+            result.add(new Star(new PixelDot(cx - (i-2) * dist, cy - apotemaY + 9*f)));
+        }
+
     }
 
     @Override
     protected void initPaints() {
-        Paints.put(STROKE, Consts.Colors.MATERIAL_LIGHTEST_GREY, 1, Paint.Style.STROKE);
-        Paints.put(TEXT, Consts.Colors.WHITE, scaledInt(23), Consts.detailFont, Paint.Align.CENTER);
+        Paints.put(STROKE, Palette.get().getAnti(Palette.Gradiation.BRIGHT), 1, Paint.Style.STROKE);
+        Paints.put(TEXT, Palette.get().getAnti(Palette.Gradiation.LUMOUS), scaledFrom480Int(23), Consts.detailFont, Paint.Align.CENTER);
+        Paints.put(TEXTD, Palette.get().getAnti(Palette.Gradiation.LUMOUS), scaledFrom480Int(20), Consts.detailFont, Paint.Align.LEFT);
+
+    }
+
+    @Override
+    public void update() {
+        super.update();
+
+        obulbs.inherit(this);
+        wasted.inherit(this);
+        perfct.inherit(this);
+        result.inherit(this);
+
+        int r = 0;
+
+        for(int i = 0; i < picked; i++){
+            obulbs.get(i).setPicked(true);
+            r++;
+        }
+        for(int i = picked; i < total; i++){
+            obulbs.get(i).setPicked(false);
+        }
+
+
+        if(waste == 0) {
+            wasted.get(0).setPicked(true);
+            r++;
+        } else {
+            wasted.get(0).setPicked(false);
+        }
+
+        if(waste == 0 && picked == total) {
+            perfct.get(0).setPicked(true);
+            r++;
+        } else {
+            perfct.get(0).setPicked(false);
+        }
+
+        for(int i = 0; i < r; i++){
+            result.get(i).setPicked(true);
+        }
+
+        obulbs.update();
+        wasted.update();
+        perfct.update();
+        result.update();
+
     }
 
     @Override
@@ -49,22 +131,37 @@ public class ResultView extends SchemeLayoutDrawable {
         Dot size    = MIN_SIZE;
         Dot center  = MIN_CENTER;
 
-        if(grid != null){
-            size   = Dot.min(Dot.max(grid.getMaxSize().add(2), MIN_SIZE), MAX_SIZE);
+        /*if(grid != null){
+            size   = Dot.min(Dot.max(grid.getMaxSize().add(1), MIN_SIZE), MAX_SIZE);
             center = grid.getCenter();
-        }
+        }*/
 
-        drawStroke(canvas, center, size, new GridDot(1,4), Paints.get(STROKE, alpha()));
-        drawString(canvas, center, size, Consts.getString(context, Consts.EndLevelString1), Consts.getString(context, Consts.EndLevelString2), Paints.get(TEXT, alpha()));
+        drawStroke(canvas, center, size, new GridDot(0.5, 3), Paints.get(STROKE, alpha()));
+        drawString(canvas, center, size);
     }
 
-    private void drawString(Canvas canvas, Dot center, Dot size, String string1, String string2, Paint paint) {
-        string2 = string2.replace("%picked%", String.valueOf(picked));
-        string2 = string2.replace("%total%", String.valueOf(total));
-        float h = (paint.descent() - paint.ascent()) / 2 - 2;
+    private void drawString(Canvas canvas, Dot center, Dot size) {
+        String title = context.getString(R.string.EndLevelString1);
+        String achv1 = context.getString(R.string.EndLevelAchievment1);
+        String achv2 = context.getString(R.string.EndLevelAchievment2);
+        String achv3 = context.getString(R.string.EndLevelAchievment3);
 
-        canvas.drawText(string1, center.pixelX(), center.pixelY() - size.pixelY()/2 + h, paint);
-        canvas.drawText(string2, center.pixelX(), center.pixelY() + size.pixelY()/2 + h, paint);
+        int apotemaX = (int) (size.pixelX()/2);
+        int apotemaY = (int) (size.pixelY()/2);
+        int f = (int) (size.pixelY() / 10);
+        int cx = (int) center.pixelX(), cy = (int) center.pixelY();
+        int leftLimit = cx - apotemaX + scaledInt(80);
+
+        Utils.drawCenteredText(canvas, title, cx, cy - apotemaY, Paints.get(TEXT, alpha()));
+        Utils.drawCenteredText(canvas, achv1, leftLimit, cy - apotemaY + 3*f, Paints.get(TEXTD, alpha()));
+        Utils.drawCenteredText(canvas, achv2, leftLimit, cy - apotemaY + 5*f, Paints.get(TEXTD, alpha()));
+        Utils.drawCenteredText(canvas, achv3, leftLimit, cy - apotemaY + 7*f, Paints.get(TEXTD, alpha()));
+
+        obulbs.render(canvas);
+        perfct.render(canvas);
+        wasted.render(canvas);
+        result.render(canvas);
+
     }
 
     private void drawStroke(Canvas canvas, Dot center, Dot size, Dot angleAndTextspace, Paint paint){
@@ -80,13 +177,14 @@ public class ResultView extends SchemeLayoutDrawable {
 
 
         // Linee:
-        // Sono sei, quattro orizzontali e due verticali.
+        // Sono sei, tre orizzontali e due verticali.
         float l = ( size.pixelX() - 2*a - ts) / 2;
 
         drawLineH(canvas, NOx + a, NOy, + l, paint);
         drawLineH(canvas, NEx - a, NEy, - l, paint);
-        drawLineH(canvas, SOx + a, SOy, +l, paint);
-        drawLineH(canvas, SEx - a, SEy, - l, paint);
+        drawLineH(canvas, SOx + a, SOy, size.pixelX() - 2 * a, paint);
+        //drawLineH(canvas, SOx + a, SOy, +l, paint);
+        //drawLineH(canvas, SEx - a, SEy, - l, paint);
 
         drawLineV(canvas, NOx, NOy + a, size.pixelY() - 2 * a, paint);
         drawLineV(canvas, NEx, NEy + a, size.pixelY() - 2 * a, paint);
@@ -123,9 +221,13 @@ public class ResultView extends SchemeLayoutDrawable {
         this.total = total;
     }
 
-    public void setGrid(Grid grid) {
-        this.grid = grid;
+    public void setWastedLums(int waste) {
+        this.waste = waste;
     }
+
+    /*public void setGrid(Grid grid) {
+        this.grid = grid;
+    }*/
 
 
 }

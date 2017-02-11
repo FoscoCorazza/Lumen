@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.corazza.fosco.lumenGame.R;
 import com.corazza.fosco.lumenGame.helpers.Consts;
+import com.corazza.fosco.lumenGame.helpers.Palette;
 import com.corazza.fosco.lumenGame.schemes.SchemeInfo;
 
 import java.util.ArrayList;
@@ -48,9 +49,9 @@ public class SchemeStickyListAdapter extends ArrayAdapter<SchemeInfo> implements
         if (item!= null) {
             viewHolder.itemView.setText(item.getName());
             if(item.getResult() != null){
-                viewHolder.itemView.setTextColor(Consts.Colors.MATERIAL_GREEN);
+                viewHolder.itemView.setTextColor(Palette.get().getMain(Palette.Gradiation.NORMAL));
             } else {
-                viewHolder.itemView.setTextColor(Consts.Colors.WHITE);
+                viewHolder.itemView.setTextColor(Palette.get().getAnti(Palette.Gradiation.LUMOUS));
             }
         }
 

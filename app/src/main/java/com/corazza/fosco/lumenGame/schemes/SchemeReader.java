@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 /**
  * Created by Simone on 10/05/2016.
@@ -32,7 +33,7 @@ public class SchemeReader {
     private static final String ns = null;
     private static SchemeReader sr;
 
-    public HashMap<String, SchemeInfo> parse(InputStream in) throws XmlPullParserException, IOException {
+    public TreeMap<String, SchemeInfo> parse(InputStream in) throws XmlPullParserException, IOException {
         try {
             XmlPullParser parser = Xml.newPullParser();
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
@@ -44,7 +45,7 @@ public class SchemeReader {
         }
     }
 
-    private HashMap<String, MenuSchemeInfo> parseMenu(InputStream in) throws XmlPullParserException, IOException {
+    private TreeMap<String, MenuSchemeInfo> parseMenu(InputStream in) throws XmlPullParserException, IOException {
         try {
             XmlPullParser parser = Xml.newPullParser();
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
@@ -56,8 +57,8 @@ public class SchemeReader {
         }
     }
 
-    private HashMap<String, SchemeInfo> readSchemeList(XmlPullParser parser) throws XmlPullParserException, IOException {
-        HashMap<String, SchemeInfo> entries = new HashMap<>();
+    private TreeMap<String, SchemeInfo> readSchemeList(XmlPullParser parser) throws XmlPullParserException, IOException {
+        TreeMap<String, SchemeInfo> entries = new TreeMap<>();
 
         parser.require(XmlPullParser.START_TAG, ns, "schemes");
         while (parser.next() != XmlPullParser.END_TAG) {
@@ -77,8 +78,8 @@ public class SchemeReader {
 
     }
 
-    private HashMap<String, MenuSchemeInfo> readMenuSchemeList(XmlPullParser parser) throws XmlPullParserException, IOException {
-        HashMap<String, MenuSchemeInfo> entries = new HashMap<>();
+    private TreeMap<String, MenuSchemeInfo> readMenuSchemeList(XmlPullParser parser) throws XmlPullParserException, IOException {
+        TreeMap<String, MenuSchemeInfo> entries = new TreeMap<>();
 
         parser.require(XmlPullParser.START_TAG, ns, "schemes");
         while (parser.next() != XmlPullParser.END_TAG) {
@@ -206,7 +207,7 @@ public class SchemeReader {
             unlocked = Boolean.parseBoolean(getAttributeNamed(parser, "unlocked"));
         }catch (Exception ignored){}
 
-        Level level = new Level(getAttributeNamed(parser, "id"), stars, !unlocked);
+        Level level = new Level(getAttributeNamed(parser, "id"), !unlocked);
 
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
@@ -246,12 +247,12 @@ public class SchemeReader {
                 case "id":
                     parser.require(XmlPullParser.START_TAG, ns, "id");
                     id = readText(parser);
-                    level.addUnlockedLevels(id.split(";"));
+                    //level.addUnlockedLevels(id.split(";"));
                     parser.require(XmlPullParser.END_TAG, ns, "id");
                     break;
                 case "path":
                     path = readPath(parser);
-                    level.addUnlockedPath(path);
+                    //level.addUnlockedPath(path);
                     break;
                 default:
                     skip(parser);
@@ -507,7 +508,7 @@ public class SchemeReader {
 
 
 
-    public static HashMap<String, SchemeInfo> read(Context context){
+    public static TreeMap<String, SchemeInfo> read(Context context){
         if(sr == null) {
             sr = new SchemeReader();
         }
@@ -517,12 +518,12 @@ public class SchemeReader {
             return sr.parse(is);
         } catch (XmlPullParserException | IOException e) {
             e.printStackTrace();
-            return new HashMap<>();
+            return new TreeMap<>();
         }
 
     }
 
-    public static HashMap<String, MenuSchemeInfo> readMenu(Context context){
+    public static TreeMap<String, MenuSchemeInfo> readMenu(Context context){
         if(sr == null) {
             sr = new SchemeReader();
         }
@@ -532,7 +533,7 @@ public class SchemeReader {
             return sr.parseMenu(is);
         } catch (XmlPullParserException | IOException e) {
             e.printStackTrace();
-            return new HashMap<>();
+            return new TreeMap<>();
         }
 
     }

@@ -7,7 +7,7 @@ import com.corazza.fosco.lumenGame.schemes.schemeLayout.SchemeCreatorLayout;
 
 import java.util.Arrays;
 
-import static com.corazza.fosco.lumenGame.helpers.Utils.scaledInt;
+import static com.corazza.fosco.lumenGame.helpers.Utils.scaledFrom480Int;
 
 /**
  * Created by Simone Chelo on 10/10/2016.
@@ -33,9 +33,9 @@ public class CreatorHud extends Hud {
         buttons    = Arrays.copyOf(buttons, ERAS+1);
 
         int xO = Consts.W/2;
-        int xD = scaledInt(80);
-        int yO = Consts.H - scaledInt(80);
-        int yD = scaledInt(80);
+        int xD = scaledFrom480Int(80);
+        int yO = Consts.H - scaledFrom480Int(80);
+        int yD = scaledFrom480Int(80);
 
         buttons[HIDE] = new Button(
                 R.drawable.scheme_hud_button_hide,
@@ -76,7 +76,7 @@ public class CreatorHud extends Hud {
 
         buttons[ERAS] = new Button(
                 R.drawable.scheme_hud_button_erase,
-                new PixelDot(xO + 2*xD, yO-yD), caller, Button.Action.ERASE, true);
+                new PixelDot(xO + 2*xD, yO-yD), caller, Button.Action.STRONG_ERASE, true);
 
     }
 

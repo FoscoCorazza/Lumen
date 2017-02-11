@@ -27,4 +27,8 @@ public class PixelDot extends Dot {
         return new PixelDot(this.x + x, this.y + y);
     }
 
+    public void change(int x1, int y1) {
+        x = x1;
+        y = y1;
+    }
 }

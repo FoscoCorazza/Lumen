@@ -11,6 +11,7 @@ import android.util.StringBuilderPrinter;
 
 import com.corazza.fosco.lumenGame.MainThread;
 import com.corazza.fosco.lumenGame.R;
+import com.corazza.fosco.lumenGame.helpers.SoundsHelper;
 import com.corazza.fosco.lumenGame.savemanager.SaveFileManager;
 import com.corazza.fosco.lumenGame.helpers.Consts;
 import com.corazza.fosco.lumenGame.schemes.schemeLayout.TitleSchemeLayout;
@@ -46,6 +47,8 @@ public class TitleActivity extends SchemeLayoutActivity<TitleSchemeLayout> {
                 }
             }
         }
+
+
         return (TitleSchemeLayout) Consts.getSchemeLayout("TITLE", new TitleSchemeLayout(this));
     }
 
@@ -54,6 +57,7 @@ public class TitleActivity extends SchemeLayoutActivity<TitleSchemeLayout> {
         SaveFileManager.createFile(this);
         Consts.loadConsts(this);
         Consts.loadProgresses(this);
+        SoundsHelper.getInstance().play_title_theme(this);
     }
 
 }
