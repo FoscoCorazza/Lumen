@@ -7,6 +7,8 @@ import com.corazza.fosco.lumenGame.geometry.Line;
 import com.corazza.fosco.lumenGame.geometry.Path;
 import com.corazza.fosco.lumenGame.geometry.Segment;
 import com.corazza.fosco.lumenGame.geometry.dots.Dot;
+import com.corazza.fosco.lumenGame.lists.ListOfSegments;
+import com.corazza.fosco.lumenGame.lists.ListOfSegmentsWithInclusion;
 import com.corazza.fosco.lumenGame.savemanager.SchemeResult;
 import com.corazza.fosco.lumenGame.schemes.schemeLayout.SchemeLayout;
 
@@ -25,15 +27,15 @@ public class SchemeInfo {
     private Grid grid;
     private Path path;
     private SchemeResult result;
-    private List<Pair<Dot, Dot>> fixedLines;
-    private List<Pair<Dot, Dot>> obstructors;
-    private List<Pair<Dot, Dot>> destructors;
-    private List<Pair<Dot, Dot>> deflectors;
+    private ListOfSegments fixedLines;
+    private ListOfSegmentsWithInclusion obstructors;
+    private ListOfSegments destructors;
+    private ListOfSegments deflectors;
     private List<Pair<Dot, Integer>> bulbs;
     private List<Dot> stars;
 
-    public SchemeInfo(String code, String name, String sector, Dot lumen, List<Pair<Dot, Integer>> bulbs, List<Pair<Dot, Dot>> fixedLines,
-                      List<Pair<Dot, Dot>> obstructors, List<Pair<Dot, Dot>> destructors, List<Pair<Dot, Dot>> deflectors,
+    public SchemeInfo(String code, String name, String sector, Dot lumen, List<Pair<Dot, Integer>> bulbs, ListOfSegments fixedLines,
+                      ListOfSegmentsWithInclusion obstructors, ListOfSegments destructors, ListOfSegments deflectors,
                       List<Dot> stars, Grid grid, Path path) {
 
         this.code = code;
@@ -132,4 +134,6 @@ public class SchemeInfo {
     public int getStarsTotal() {
         return stars != null ? stars.size() : 0;
     }
+
+
 }

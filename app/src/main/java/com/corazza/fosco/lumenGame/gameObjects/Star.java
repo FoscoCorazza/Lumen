@@ -3,9 +3,10 @@ package com.corazza.fosco.lumenGame.gameObjects;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
+import com.corazza.fosco.lumenGame.animations.AlphaAnimation;
+import com.corazza.fosco.lumenGame.animations.SizeAnimation;
 import com.corazza.fosco.lumenGame.geometry.Segment;
 import com.corazza.fosco.lumenGame.geometry.dots.Dot;
-import com.corazza.fosco.lumenGame.helpers.AnimType;
 import com.corazza.fosco.lumenGame.helpers.Consts;
 import com.corazza.fosco.lumenGame.helpers.Paints;
 import com.corazza.fosco.lumenGame.helpers.Palette;
@@ -17,12 +18,9 @@ public class Star extends Segment {
 
     private static final String PICKEDPAINT = "PICKEDPAINT";
     private boolean picked = false;
-    private int PICK = 78923719;
 
-    private boolean pickingAnimationActive = false;
-    private float pickedPaintOpacity = 0;
-    private float pickedSizeMultiplier = 1;
-    long pickTime = 150;
+    AlphaAnimation αAnimation;
+    SizeAnimation sAnimation;
 
     private static int getMainColor() {
         return Palette.get().getBack(Palette.Gradiation.DARKKK);
@@ -32,6 +30,8 @@ public class Star extends Segment {
         super(gamma, gamma);
         getDrawingSettings().showString = false;
         getDrawingSettings().showStrike = false;
+        αAnimation = new AlphaAnimation(this, 0, 255, 150);
+        sAnimation = new SizeAnimation(this, 1, 1.5f, 150);
     }
 
     @Override
@@ -52,15 +52,15 @@ public class Star extends Segment {
 
         int x = (int) gamma.pixelX();
         int y = (int) gamma.pixelY();
-        canvas.drawCircle(x, y, getRadius(), getPaint(MAINPAINT, extAlpha(100)));
-        canvas.drawCircle(x, y, getRadius(), getPaint(PICKEDPAINT, pickedPaintOpacity));
+        canvas.drawCircle(x, y, getRadius(), getPaint(MAINPAINT, 0.5f));
+        canvas.drawCircle(x, y, getRadius(), getPaint(PICKEDPAINT, αAnimation.getOpacity()));
         canvas.drawCircle(x, y, getRadius(), getPaint(BACKPAINT));
         Bulb.drawFilamento(canvas, x, y, getRadius(), getPaint(BACKPAINT));
 
     }
 
     public int getRadius() {
-        return (int) (pickedSizeMultiplier * size/6);
+        return (int) (sAnimation.getSizeMultiplier() * size/6);
     }
 
     public boolean isPicked() {
@@ -68,40 +68,21 @@ public class Star extends Segment {
     }
 
     public void setPicked(boolean picked) {
+        if(picked) {
+            if (!this.picked) {
+                αAnimation.start();
+            }
+            sAnimation.start();
+        }
+
         this.picked = picked;
-    }
-
-    public void pick() {
-        setPicked(true);
-        requestPickAnimation();
-    }
-
-    public void requestPickAnimation(){
-
-        pickingAnimationActive = true;
-        setTimeElapsed(PICK, 0);
-
+        if(!picked) αAnimation.revert();
     }
 
     @Override
     public void update() {
         super.update();
-        float m = 1.5f;
-
-        if(pickingAnimationActive && picked){
-            pickedPaintOpacity   = valueOfNow(PICK,0,1,0,pickTime, AnimType.DEFAULT);
-            pickedSizeMultiplier = valueOfNow(PICK,1,m,0,pickTime, AnimType.HALFSINE);
-            if(getTimeElapsed(PICK) > pickTime){
-                pickingAnimationActive = false;
-                pickedPaintOpacity = 1;
-            }
-        } else if (picked){
-            pickedSizeMultiplier = 1;
-            pickedPaintOpacity = 1;
-        } else {
-            pickedSizeMultiplier = 1;
-            pickedPaintOpacity = 0;
-        }
-
+        αAnimation.update();
+        sAnimation.update();
     }
 }

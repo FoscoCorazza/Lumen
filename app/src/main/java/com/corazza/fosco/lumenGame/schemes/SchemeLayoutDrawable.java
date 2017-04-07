@@ -1,26 +1,24 @@
 package com.corazza.fosco.lumenGame.schemes;
 import android.graphics.Canvas;
+import android.util.SparseArray;
 
-import com.corazza.fosco.lumenGame.geometry.Path;
+import com.corazza.fosco.lumenGame.animations.AlphaAnimation;
 import com.corazza.fosco.lumenGame.geometry.dots.Dot;
 import com.corazza.fosco.lumenGame.geometry.dots.PixelDot;
 import com.corazza.fosco.lumenGame.helpers.AnimType;
 import com.corazza.fosco.lumenGame.helpers.Consts;
 import com.corazza.fosco.lumenGame.helpers.Utils;
 
-import java.util.HashMap;
-
 public abstract class SchemeLayoutDrawable {
     private static final int MAIN = 0;
-    private static final int FADING = -1;
-    protected static final int FADING_TIME = 1000; // in Millisecondi
 
-    public float  opacity = 1;
+    public float opacity = 1;
     public Dot position;
     protected PixelDot offset = new PixelDot(0,0);
     public int size = Consts.baseGridSize;
-    protected boolean isFadingOut = false;
-    protected boolean isFadingIn  = false;
+
+    private AlphaAnimation fadeInAnimation  = new AlphaAnimation(this, 0, 255, 1000);
+    private AlphaAnimation fadeOutAnimation = new AlphaAnimation(this, 255, 0, 1000);
 
     // Costruttore
     public SchemeLayoutDrawable(Dot position){
@@ -28,19 +26,21 @@ public abstract class SchemeLayoutDrawable {
         initPaints();
     }
 
-    public SchemeLayoutDrawable() {initPaints();}
+    public SchemeLayoutDrawable() {
+        initPaints();
+    }
 
     // Funzioni di disegno
     protected abstract void initPaints();
     public abstract void render(Canvas canvas);
-    public void update() {updateOpacity();}
+    public void update() {updateAnimations();}
     public void startAnimation() { setTimeElapsed(0); }
     public float pixelX() {return position.pixelX();}
     public float pixelY() {return position.pixelY();}
 
     // Gestione del tempo
-    private HashMap<Integer, Long> bgnTime = new HashMap<>();
-    protected long getTimeElapsed(int action){
+    private SparseArray<Long> bgnTime = new SparseArray<>();
+    public long getTimeElapsed(int action){
         if (bgnTime.get(action) != null) {
             return System.currentTimeMillis() - bgnTime.get(action);
         } else {
@@ -51,7 +51,7 @@ public abstract class SchemeLayoutDrawable {
         return getTimeElapsed(0);
     }
 
-    protected void setTimeElapsed(int action, long ms){
+    public void setTimeElapsed(int action, long ms){
         bgnTime.put(action, System.currentTimeMillis() - ms);
     }
     protected void setTimeElapsed(long ms){
@@ -62,7 +62,7 @@ public abstract class SchemeLayoutDrawable {
         return Utils.valueOfNow((float) getTimeElapsed(), bgnPoint, endPoint, bgnTime, endTime, type);
     }
 
-    protected float valueOfNow(int action, float bgnPoint, float endPoint, long bgnTime, long endTime, AnimType type) {
+    public float valueOfNow(int action, float bgnPoint, float endPoint, long bgnTime, long endTime, AnimType type) {
         return Utils.valueOfNow((float) getTimeElapsed(action), bgnPoint, endPoint, bgnTime, endTime, type);
     }
 
@@ -70,52 +70,49 @@ public abstract class SchemeLayoutDrawable {
         return Utils.valueOfNow((float) x, bgnPoint, endPoint, bgnTime, endTime, type);
     }
 
-    public void notifyFadeOut() {
-        setTimeElapsed(FADING, 0);
-        isFadingOut = true;
+    public void startFadeOut() {
+        fadeOutAnimation.start();
     }
 
-    public void notifyFadeIn() {
-        setTimeElapsed(FADING, 0);
-        isFadingIn = true;
+    public void startFadeIn() {
+        fadeInAnimation.start();
     }
 
-    protected void updateOpacity(){
-        if(isFadingOut) {
-            opacity = valueOfNow(FADING, 1, 0, 0, FADING_TIME, AnimType.DEFAULT);
-        } else if(isFadingIn){
-            opacity = valueOfNow(FADING, 0,1,0, FADING_TIME, AnimType.DEFAULT);
-        }
+    private void updateAnimations(){
+        fadeInAnimation.update();
+        fadeOutAnimation.update();
+
+        if(fadeInAnimation.isActive())  opacity = fadeInAnimation.getOpacity();
+        if(fadeOutAnimation.isActive()) opacity = fadeOutAnimation.getOpacity();
 
     }
 
     public boolean hasFadedIn(){
-        return isFadingIn && getTimeElapsed(FADING) > FADING_TIME;
+        return fadeInAnimation.isActive() && !fadeInAnimation.isOngoing();
     }
 
     public boolean hasFadedOut(){
-        return isFadingOut && getTimeElapsed(FADING) > FADING_TIME;
+        return fadeOutAnimation.isActive() && !fadeOutAnimation.isOngoing();
     }
 
     public int alpha() {
         return (int) (opacity*255);
     }
 
-    protected int extAlpha(float extAlpha) {
+    protected int extAlpha(int extAlpha) {
         return (int) (opacity*extAlpha);
     }
 
     public void inherit(SchemeLayoutDrawable drawable) {
-        isFadingOut = drawable.isFadingOut;
-        isFadingIn  = drawable.isFadingIn;
+        fadeOutAnimation = drawable.fadeOutAnimation;
+        fadeInAnimation = drawable.fadeInAnimation;
         opacity = drawable.opacity;
-        setTimeElapsed(FADING, drawable.getTimeElapsed(FADING));
     }
 
     public void renew() {
         opacity = 1;
-        isFadingIn = false;
-        isFadingOut =false;
+        fadeOutAnimation.revert();
+        fadeInAnimation.revert();
     }
 
     public boolean isIn(Dot dot) {

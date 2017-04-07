@@ -55,19 +55,18 @@ public class Segment extends Rect {
 
         float r = Consts.lineTerminatorRadius;
 
-        Paint mainPaint = getPaint(MAINPAINT);
-        Paint backPaint = getPaint(BACKPAINT);
         int gx = (int) (gamma.pixelX() + offset.pixelX());
         int gy = (int) (gamma.pixelY() + offset.pixelY());
         int tx = (int) (theta.pixelX() + offset.pixelX());
         int ty = (int) (theta.pixelY() + offset.pixelY());
 
 
-        if(getDrawingSettings().showStrike) canvas.drawLine(gx, gy, tx, ty, backPaint);
-        canvas.drawLine(gx, gy, tx, ty, mainPaint);
+        drawLine(canvas, gx,gy,tx,ty);
         drawLineTerminators(canvas, gx, gy, tx, ty, r);
         if(getDrawingSettings().showString && isShowLength()) drawQuantity(canvas, gx, gy, tx, ty);
     }
+
+
 
     @Override
     public void render(Canvas canvas, int x, int y) {
@@ -78,6 +77,13 @@ public class Segment extends Rect {
     protected void drawLineTerminators(Canvas canvas, int gx, int gy, int tx, int ty, float r) {
         canvas.drawCircle(gx, gy, r, getPaint(MAINPAINT));
         canvas.drawCircle(tx, ty, r, getPaint(MAINPAINT));
+    }
+
+    protected void drawLine(Canvas canvas, int gx, int gy, int tx, int ty) {
+        Paint mainPaint = getPaint(MAINPAINT);
+        Paint backPaint = getPaint(BACKPAINT);
+        if(getDrawingSettings().showStrike) canvas.drawLine(gx, gy, tx, ty, backPaint);
+        canvas.drawLine(gx, gy, tx, ty, mainPaint);
     }
 
     private void drawQuantity(Canvas canvas, int gx, int gy, int tx, int ty) {
@@ -139,6 +145,36 @@ public class Segment extends Rect {
         }
         else return s;
 
+    }
+
+    public boolean extensionOf(Segment that){
+
+        //Se uno dei due é lungo zero ed agli estremi allora sono uno l'estensione dell'altro.
+        if(length().equals(Radical.Zero)){
+            if(that.startsAt(gamma)) return true;
+        }
+
+        if(that.length().equals(Radical.Zero)){
+            if(startsAt(that.gamma)) return true;
+        }
+
+        if(coincident(that)) {
+            float l1 = left();
+            float r1 = right();
+            float l2 = that.left();
+            float r2 = that.right();
+
+            float t1 = top();
+            float b1 = bottom();
+            float t2 = that.top();
+            float b2 = that.bottom();
+
+            boolean hor = (l1 == r2 && r1 > l2) || (l2 == r1 && r2 > l1) || (l1 == r1 && l2 == r2 && r1 == l2);
+            boolean ver = (b1 == t2 && t1 < b2) || (b2 == t1 && t2 < b1) || (b1 == t1 && b2 == t2 && t1 == b2);
+
+            return hor && ver;
+        }
+        return false;
     }
 
     @Override
@@ -246,8 +282,6 @@ public class Segment extends Rect {
 
                 //Creo il punto Theta del Segmento
                 theta = normPoint.pixelDot();
-                //theta = Utils.nearest(normPoint, thetaCandidates());
-                //if(containsAnyOf(schemeLayout.getSpikesPositions())){
                 if(obstructed){
                     setColor(Obstructor.getColor());
                 } else {
@@ -463,4 +497,5 @@ public class Segment extends Rect {
         this.gamma = gamma.pixelDot();
         this.theta = theta.pixelDot();
     }
+
 }

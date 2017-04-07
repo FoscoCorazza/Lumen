@@ -72,7 +72,7 @@ public class Level extends SchemeLayoutDrawable {
         canvas.drawCircle(px, py, s2, STRKE);
 
         //Stars
-        int ssize = scaledInt(12);
+        int ssize = s2/7;
         int s = getTotPoints();
         int deg = 36;
         int dist =  s2 - ssize*2;
@@ -105,7 +105,8 @@ public class Level extends SchemeLayoutDrawable {
     }
 
     private int HalfWidth() {
-        return (int) (size / 2.3f);
+        int w = (int) (size / 2.3f);
+        return pressed ? (int) (w * 0.9) : w;
     }
 
 
@@ -166,7 +167,7 @@ public class Level extends SchemeLayoutDrawable {
         int action = event.getAction();
         if(action == MotionEvent.ACTION_MOVE && !onButton) {
             pressed = false;
-        }else if(opacity>0 && onButton){
+        } else if(opacity>0 && onButton){
             switch (action) {
                 case MotionEvent.ACTION_DOWN:
                     pressed = true;
@@ -186,7 +187,7 @@ public class Level extends SchemeLayoutDrawable {
     }
 
     private boolean onButton(Dot dot) {
-        int s = (int) HalfWidth();
+        int s = HalfWidth();
         int minx = (int) (position.pixelX() - s);
         int miny = (int) (position.pixelY() - s);
         int maxx = (int) (position.pixelX() + s);

@@ -6,7 +6,6 @@ import com.corazza.fosco.lumenGame.helpers.Utils;
 
 public abstract class Dot {
     public  int gridSize = Consts.baseGridSize ;
-    private String tag = "";
 
     protected float x, y;
 
@@ -88,5 +87,4 @@ public abstract class Dot {
     public int pixelDistance(Dot dot) {
         return (int) Utils.hypotenuse(pixelX()-dot.pixelX(), pixelY() - dot.pixelY());
     }
-
 }

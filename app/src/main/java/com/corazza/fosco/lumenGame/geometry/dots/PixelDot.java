@@ -31,4 +31,9 @@ public class PixelDot extends Dot {
         x = x1;
         y = y1;
     }
+
+    @Override
+    public String toString() {
+        return "(" +((int)pixelX())+"px, "+((int)pixelY())+"px)";
+    }
 }

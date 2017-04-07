@@ -140,14 +140,14 @@ public class Bulb extends SchemeLayoutDrawable {
                         x-i+a,    y+i +o + a +j,
                         x+i-a,    y+i +o + a +j,
                         x+i-a,    y+i +o + a +j,
-                        x+i,     y+i +o +j,
-                        x+i,     y+i +o +j,
-                        x+i,    y+i +o};
+                        x+i,      y+i +o +j,
+                        x+i,      y+i +o +j,
+                        x+i,      y+i +o};
 
         canvas.drawLines(pts, paint);
     }
 
-    public static void drawFilamento(Canvas canvas, int x, int y, int size, Paint paint) {
+    static void drawFilamento(Canvas canvas, int x, int y, int size, Paint paint) {
         float i = size/3;
         float j = size/4;
         float[] pts = { x,      y+size,
@@ -164,51 +164,6 @@ public class Bulb extends SchemeLayoutDrawable {
         canvas.drawLines(pts, paint);
     }
 
-
-    public void renderOldBulb(Canvas canvas, float opacity) {
-        int x = (int) position.pixelX(), y = (int) position.pixelY();
-
-        float left   = x    - (5*size)/8;
-        float top    = y    - (5*size)/8;
-        float right  = left + (5*size)/4;
-        float bottom = top  + (5*size)/4;
-        int padding  = size/18;
-
-        canvas.save();
-        canvas.rotate(rotation2, (float)x, (float)y);
-        canvas.drawRect(left, top, right, bottom, Paints.get(MAINPAINTID(), alpha()));
-        canvas.restore();
-
-        left   = x -    size/2;
-        top    = y -    size/2;
-        right  = left + size;
-        bottom = top +  size;
-
-        if(forwardRotation){
-            canvas.save();
-            canvas.rotate(rotation1, (float)x, (float)y);
-        }
-        canvas.drawRect(left, top, right, bottom, Paints.get(NEEDPAINTID(), alpha()));
-        canvas.drawRect(left-padding, top-padding, right+padding, bottom+padding, Paints.get(STROKE, alpha()));
-
-        if(forwardRotation)  canvas.restore();
-
-
-        if(drawCore) {
-            canvas.drawCircle(x, y, size/5, Paints.get(MAINPAINTID(), alpha()));
-            canvas.drawCircle(x, y, size/5 + 3, Paints.get(STROKE, alpha()));
-        }
-
-        if(!needHidden) {
-            canvas.drawCircle(x+(size/2)+5, y+(size/2+5), 15, Paints.get(NEEDPAINTID(), alpha()));
-            canvas.drawText(Integer.toString(need), x+(size/2)+5, y+(size/2)+5+5, Paints.get(TEXT, alpha()));
-        }
-
-
-
-
-    }
-
     int baseColor = SECONDARY_COLOR;
     int saturationColor = Palette.get().getMain(Palette.Gradiation.NORMAL);
     int underSaturationColor = Palette.get().getHipo();
@@ -219,7 +174,7 @@ public class Bulb extends SchemeLayoutDrawable {
 
 
     public void update(){
-        updateOpacity();
+        super.update();
         int redvalue, greenvalue, bluevalue;
 
         int baseRed   = Color.red(baseColor);
@@ -363,9 +318,7 @@ public class Bulb extends SchemeLayoutDrawable {
 
     @Override
     public void renew() {
-        opacity = 1;
-        isFadingIn = false;
-        isFadingOut =false;
+        super.renew();
         baseSize = Consts.baseGridSize / 2;
         size = baseSize;
         saturationNotified = false;

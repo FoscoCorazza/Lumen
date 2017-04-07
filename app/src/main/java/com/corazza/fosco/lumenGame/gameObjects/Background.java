@@ -95,7 +95,7 @@ public class Background extends SchemeLayoutDrawable {
 
     @Override
     public void update() {
-        updateOpacity();
+        super.update();
         Layer out = null;
         for(Layer layer : layers) {
             layer.update();

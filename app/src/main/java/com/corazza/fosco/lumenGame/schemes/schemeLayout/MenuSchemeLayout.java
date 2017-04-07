@@ -3,19 +3,13 @@ package com.corazza.fosco.lumenGame.schemes.schemeLayout;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.VelocityTrackerCompat;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
-import android.view.ViewGroup;
-import android.widget.ScrollView;
 
-import com.corazza.fosco.lumenGame.R;
 import com.corazza.fosco.lumenGame.activities.MainActivity;
 import com.corazza.fosco.lumenGame.gameObjects.Level;
 import com.corazza.fosco.lumenGame.gameObjects.SegmentCreatorListener;
-import com.corazza.fosco.lumenGame.gameObjects.huds.Button;
 import com.corazza.fosco.lumenGame.geometry.Path;
 import com.corazza.fosco.lumenGame.geometry.Segment;
 import com.corazza.fosco.lumenGame.geometry.dots.Dot;
@@ -25,10 +19,9 @@ import com.corazza.fosco.lumenGame.helpers.Consts;
 import com.corazza.fosco.lumenGame.helpers.Paints;
 import com.corazza.fosco.lumenGame.helpers.Palette;
 import com.corazza.fosco.lumenGame.helpers.Utils;
-import com.corazza.fosco.lumenGame.schemes.DList;
+import com.corazza.fosco.lumenGame.lists.Dlist;
 import com.corazza.fosco.lumenGame.schemes.SchemeInfo;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -41,7 +34,7 @@ public class MenuSchemeLayout extends SchemeLayout implements Level.LevelClickLi
     final int LVL_PER_LINE = 5;
 
     private static final String TEXTPAINT = "TITLETEXTPAINT";
-    private DList<Level> lvls;
+    private Dlist<Level> lvls;
     private int scrollValue = 0;
     private int height;
 
@@ -171,7 +164,7 @@ public class MenuSchemeLayout extends SchemeLayout implements Level.LevelClickLi
         int lastScrollValue = 0;
 
         // Conto quanti livelli esistono.
-        lvls = new DList<>();
+        lvls = new Dlist<>();
         TreeMap<String, SchemeInfo> schemes = Consts.schemeList;
         for(Map.Entry<String, SchemeInfo> entry : schemes.entrySet()){
             SchemeInfo info = entry.getValue();

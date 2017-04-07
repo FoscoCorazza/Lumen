@@ -6,6 +6,8 @@ import android.graphics.Path;
 
 import com.corazza.fosco.lumenGame.geometry.Segment;
 import com.corazza.fosco.lumenGame.geometry.dots.Dot;
+import com.corazza.fosco.lumenGame.geometry.dots.GridDot;
+import com.corazza.fosco.lumenGame.geometry.dots.PixelDot;
 import com.corazza.fosco.lumenGame.helpers.Consts;
 import com.corazza.fosco.lumenGame.helpers.Paints;
 import com.corazza.fosco.lumenGame.helpers.Palette;
@@ -30,10 +32,12 @@ public class Deflector extends Obstacle {
     }
 
     @Override
-    protected void drawSingleTerminator(Canvas canvas, Path polygon, float x, float y, float r) {
+    protected void drawSingleTerminator(Canvas canvas, Path polygon, GridDot dot, float r) {
+        float x = dot.pixelX();
+        float y = dot.pixelY();
 
         canvas.save();
-        canvas.rotate(rotation, x,y);
+        canvas.rotate(rotation, x, y);
 
         //Pentagono:
         double size = this.size/4;

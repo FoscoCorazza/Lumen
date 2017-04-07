@@ -13,6 +13,8 @@ import com.corazza.fosco.lumenGame.geometry.Path;
 import com.corazza.fosco.lumenGame.geometry.dots.Dot;
 import com.corazza.fosco.lumenGame.geometry.dots.GridDot;
 import com.corazza.fosco.lumenGame.helpers.Consts;
+import com.corazza.fosco.lumenGame.lists.ListOfSegments;
+import com.corazza.fosco.lumenGame.lists.ListOfSegmentsWithInclusion;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -106,14 +108,16 @@ public class SchemeReader {
         String sector = getAttributeNamed(parser, "sector");
         Dot lumen = null;
         List<Pair<Dot, Integer>> bulbs = new ArrayList<>();
-        List<Pair<Dot, Dot>> fixedLines = new ArrayList<>();
-        List<Pair<Dot, Dot>> obstructors = new ArrayList<>();
-        List<Pair<Dot, Dot>> destructors = new ArrayList<>();
-        List<Pair<Dot, Dot>> deflectors = new ArrayList<>();
+        ListOfSegments fixedLines = new ListOfSegments();
+        ListOfSegments destructors = new ListOfSegments();
+        ListOfSegments deflectors = new ListOfSegments();
         List<Dot> stars = new ArrayList<>();
         Grid grid = null;
         Path path = null;
-        List<Level> levels = new ArrayList<>();
+        //List<Level> levels = new ArrayList<>();
+
+        // COOOOL, List of Pairs composed by two pairs!
+        ListOfSegmentsWithInclusion obstructors = new ListOfSegmentsWithInclusion();
 
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
@@ -149,7 +153,7 @@ public class SchemeReader {
                     path = readPath(parser);
                     break;
                 case "level":
-                    levels.add(readLevel(parser));
+                    //levels.add(readLevel(parser));
                     break;
                 default:
                     skip(parser);
@@ -198,11 +202,7 @@ public class SchemeReader {
 
     private Level readLevel(XmlPullParser parser) throws IOException, XmlPullParserException {
         parser.require(XmlPullParser.START_TAG, ns, "level");
-        int stars = 0;
         boolean unlocked = false;
-        try{
-            stars = Integer.parseInt(getAttributeNamed(parser, "stars"));
-        }catch (Exception ignored){}
         try{
             unlocked = Boolean.parseBoolean(getAttributeNamed(parser, "unlocked"));
         }catch (Exception ignored){}
@@ -292,18 +292,29 @@ public class SchemeReader {
     }
 
     private Pair<Dot, Dot> readObstacle(XmlPullParser parser, String tagname) throws IOException, XmlPullParserException {
+        return readObstacleWithGammaThetaInclusion(parser, tagname).first;
+    }
+
+    private ListOfSegmentsWithInclusion.Element readObstacleWithGammaThetaInclusion(XmlPullParser parser, String tagname) throws IOException, XmlPullParserException {
         parser.require(XmlPullParser.START_TAG, ns, tagname);
-        Pair<Dot, Dot> n = readPair(parser);
+
+            String thetAttr = getAttributeNamed(parser, "theta");
+            String gammAttr = getAttributeNamed(parser, "gamma");
+            boolean thetaIn = thetAttr == null || thetAttr.equals("true");
+            boolean gammaIn = gammAttr == null || gammAttr.equals("true");
+            Pair<Boolean, Boolean> inclusion = new Pair<>(thetaIn, gammaIn);
+
+        Pair<Dot, Dot> obstacle = readPair(parser);
         parser.require(XmlPullParser.END_TAG, ns, tagname);
-        return n;
+        return ListOfSegmentsWithInclusion.CreateElement(obstacle, inclusion);
     }
 
     private Pair<Dot, Dot> readLines(XmlPullParser parser) throws IOException, XmlPullParserException {
         return readObstacle(parser, "line");
     }
 
-    private Pair<Dot, Dot> readObstructors(XmlPullParser parser) throws IOException, XmlPullParserException {
-        return readObstacle(parser, "obst");
+    private ListOfSegmentsWithInclusion.Element readObstructors(XmlPullParser parser) throws IOException, XmlPullParserException {
+        return readObstacleWithGammaThetaInclusion(parser, "obst");
     }
 
     private Pair<Dot, Dot> readDestructors(XmlPullParser parser) throws IOException, XmlPullParserException {

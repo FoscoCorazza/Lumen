@@ -82,7 +82,7 @@ public class Hud extends SchemeLayoutDrawable {
     }
 
     public void update(){
-        updateOpacity();
+        super.update();
         for(SchemeLayoutDrawable drawable : buttons){
             drawable.inherit(this);
             drawable.update();

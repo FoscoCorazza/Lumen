@@ -24,13 +24,13 @@ public class CreatorHud extends Hud {
     static final int GRDW = NHUDBT+7;
     static final int GRDD = NHUDBT+8;
     static final int HIDE = NHUDBT+9;
-    static final int ERAS = NHUDBT+10;
+    static final int INCL = NHUDBT+10;
 
 
     public CreatorHud(SchemeCreatorLayout schemeCreatorLayout) {
         super(schemeCreatorLayout);
 
-        buttons    = Arrays.copyOf(buttons, ERAS+1);
+        buttons    = Arrays.copyOf(buttons, INCL+1);
 
         int xO = Consts.W/2;
         int xD = scaledFrom480Int(80);
@@ -74,20 +74,20 @@ public class CreatorHud extends Hud {
                 R.drawable.scheme_hud_button_need,
                 new PixelDot(xO - 2*xD, yO-yD), caller, Button.Action.NEED, true);
 
-        buttons[ERAS] = new Button(
-                R.drawable.scheme_hud_button_erase,
-                new PixelDot(xO + 2*xD, yO-yD), caller, Button.Action.STRONG_ERASE, true);
+        buttons[INCL] = new Button(
+                R.drawable.scheme_hud_button_include,
+                new PixelDot(xO + 2*xD, yO-yD), caller, Button.Action.INCLUDE, true);
 
     }
 
     public void activateOnly(Button.Action action){
-        for(int i = NHUDBT +1; i <= ERAS;i++){
+        for(int i = NHUDBT +1; i <= INCL;i++){
             buttons[i].setActivated(buttons[i].getAction() == action);
         }
     }
 
     public void hideAll(Button.Action action, boolean hide) {
-        for(int i = NHUDBT +1; i <= ERAS;i++){
+        for(int i = NHUDBT +1; i <= INCL;i++){
             buttons[i].setInvisible(buttons[i].getAction() != action && hide);
         }
     }

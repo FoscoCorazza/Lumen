@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import com.corazza.fosco.lumenGame.geometry.Line;
 import com.corazza.fosco.lumenGame.geometry.Radical;
 import com.corazza.fosco.lumenGame.geometry.dots.Dot;
+import com.corazza.fosco.lumenGame.geometry.dots.GridDot;
 import com.corazza.fosco.lumenGame.geometry.dots.PixelDot;
 import com.corazza.fosco.lumenGame.helpers.AnimType;
 import com.corazza.fosco.lumenGame.helpers.Paints;
@@ -14,6 +15,9 @@ import com.corazza.fosco.lumenGame.schemes.SchemeLayoutDrawable;
 import com.corazza.fosco.lumenGame.schemes.schemeLayout.SchemeLayout;
 import com.corazza.fosco.lumenGame.geometry.Segment;
 import com.corazza.fosco.lumenGame.helpers.Consts;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class Lumen extends SchemeLayoutDrawable {
 
@@ -26,10 +30,10 @@ public class Lumen extends SchemeLayoutDrawable {
     public boolean active = true;
     private Radical travelLength = new Radical();
 
-    //private Bitmap image;
     private SchemeLayout layout;
     private double speed = Consts.lumenSpeed; // Pixel al millisecondo
     private Context context;
+    private ArrayList<Line> segmentsFromWhichaTwinCame;
 
     // Constructors
     public Lumen(Context ctx, SchemeLayout layout, Dot position) {
@@ -107,8 +111,7 @@ public class Lumen extends SchemeLayoutDrawable {
 
     private float multiplier = 1;
     public void update() {
-        layout.onUpdate(this);
-        updateOpacity();
+        super.update();
         updateHeartbeat();
         if (isMoving) {
             if(getTimeElapsed() < time) {
@@ -181,7 +184,7 @@ public class Lumen extends SchemeLayoutDrawable {
         this.travelLength = travelLength;
     }
 
-    public boolean onTheWayOn(Dot dot) {
+    public boolean onTheWayTo(Dot dot) {
         return dot.equals(endPoint());
     }
 
@@ -189,8 +192,28 @@ public class Lumen extends SchemeLayoutDrawable {
         return getTravelLength().equals(lumen.getTravelLength());
     }
 
+    public ArrayList<Line> getSegmentsFromWhichaTwinCame() {
+        if(segmentsFromWhichaTwinCame == null){
+            segmentsFromWhichaTwinCame = new ArrayList<>();
+        }
+        return segmentsFromWhichaTwinCame;
+    }
+
+    public void setSegmentsFromWhichaTwinCame(ArrayList<Line> segmentsFromWhichaTwinCame) {
+        this.segmentsFromWhichaTwinCame = segmentsFromWhichaTwinCame;
+    }
+
+    public void putSegmentFromWhichaTwinCame(Line line) {
+        if(segmentsFromWhichaTwinCame == null) {
+            segmentsFromWhichaTwinCame = new ArrayList<>();
+        }
+        segmentsFromWhichaTwinCame.add(line);
+    }
+
+
     public interface SchemeLayoutListener {
          void onUpdate(SchemeLayoutDrawable sender);
+         void lumenIsOnDot(Lumen sender, GridDot dot);
     }
 
 

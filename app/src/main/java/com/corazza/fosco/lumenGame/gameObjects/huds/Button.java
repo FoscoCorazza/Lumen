@@ -61,7 +61,7 @@ public class Button extends SchemeLayoutDrawable {
         return  action == Action.NEED || action == Action.LUMEN ||
                 action == Action.STAR || action == Action.BULB ||
                 action == Action.OBST || action == Action.HIDE ||
-                action == Action.DOTS || action == Action.STRONG_ERASE ||
+                action == Action.DOTS || action == Action.INCLUDE ||
                 action == Action.GRID_H || action == Action.GRID_W;
     }
 
@@ -80,7 +80,7 @@ public class Button extends SchemeLayoutDrawable {
     public enum Action {
         START, RESET, BACK, STOP, UNDO, MODE, NEXT,
         REDO, NEED, LUMEN, STAR, BULB, OBST, HIDE,
-        DOTS, GRID_H, GRID_W, ERASE, MENU, STRONG_ERASE}
+        DOTS, GRID_H, GRID_W, ERASE, MENU, INCLUDE}
 
     public Button(int image, Dot position, SchemeLayout schemeLayout, Action action, boolean pivotInCenter) {
         super(position);
@@ -131,7 +131,7 @@ public class Button extends SchemeLayoutDrawable {
     }
 
     public void update() {
-        updateOpacity();
+        super.update();
         if(isOrbitant()) {
             orbitant = (int) valueOfNow(0,359,0,3000, AnimType.INFINITE);
         }

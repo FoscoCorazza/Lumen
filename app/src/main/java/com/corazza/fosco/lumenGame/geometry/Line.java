@@ -36,14 +36,6 @@ public abstract class Line extends SchemeLayoutDrawable {
         return showLength;
     }
 
-    public void setTextOpacity(float textOpacity) {
-        this.textOpacity = textOpacity;
-    }
-
-    public float getTextOpacity() {
-        return textOpacity;
-    }
-
     public void setFixed(boolean fixed) {
         this.fixed = fixed;
     }

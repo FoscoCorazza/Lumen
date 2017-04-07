@@ -350,35 +350,6 @@
         <grid>SIZE_3</grid>
     </scheme>
 
-  <!--scheme code="014" name="" sector="001">
-    <bulb>2;5</bulb>
-    <lumen>4;7</lumen>
-    <need>1</need>
-    <grid>
-      <dot>3;7</dot>
-      <dot>3;4</dot>
-      <dot>3;3</dot>
-      <dot>3;6</dot>
-      <dot>3;5</dot>
-      <dot>2;5</dot>
-      <dot>2;4</dot>
-      <dot>4;5</dot>
-      <dot>4;4</dot>
-      <dot>4;3</dot>
-      <dot>2;7</dot>
-      <dot>2;6</dot>
-      <dot>4;7</dot>
-      <dot>4;6</dot>
-      <dot>2;3</dot>
-    </grid>
-    <obst>0;6;1;7</obst>
-    <obst>1;7;1;3</obst>
-    <obst>4;4;4;4</obst>
-    <obst>4;6;4;6</obst>
-    <obst>3;5;2;6</obst>
-    <obst>1;3;5;3</obst>
-  </scheme-->
-
   <scheme code="014" name="Collapsed" sector="001">
     <bulb need = "2">3;4</bulb>
     <bulb need = "1">5;4</bulb>
@@ -446,10 +417,6 @@
             <dot>4;6</dot>
             <dot>3;8</dot>
         </grid>
-        <obst>2;4;2;4</obst>
-        <obst>1;5;1;5</obst>
-        <obst>4;4;4;4</obst>
-        <obst>5;5;5;5</obst>
         <obst>2;4;4;4</obst>
         <obst>5;5;4;7</obst>
         <obst>1;5;2;7</obst>
@@ -779,6 +746,160 @@
         <star>5;6</star>
     </scheme>
 
+    <scheme code="023" name="Learn Inclusiveness" sector="PlaceHolderSector">
+        <bulb need = "2">3;4</bulb>
+        <lumen>3;7</lumen>
+        <grid>
+            <dot>2;5</dot>
+            <dot>3;4</dot>
+            <dot>5;4</dot>
+            <dot>3;6</dot>
+            <dot>4;4</dot>
+            <dot>3;3</dot>
+            <dot>4;7</dot>
+            <dot>4;5</dot>
+            <dot>5;5</dot>
+            <dot>5;3</dot>
+            <dot>4;6</dot>
+            <dot>1;4</dot>
+            <dot>2;4</dot>
+            <dot>5;7</dot>
+            <dot>5;6</dot>
+            <dot>3;7</dot>
+            <dot>1;7</dot>
+            <dot>3;5</dot>
+            <dot>4;3</dot>
+            <dot>2;3</dot>
+            <dot>1;5</dot>
+            <dot>1;3</dot>
+            <dot>1;6</dot>
+            <dot>2;7</dot>
+            <dot>2;6</dot>
+        </grid>
+        <obst gamma="false" theta="false">1;5;5;5</obst>
+        <obst>2;6;4;6</obst>
+        <star>5;7</star>
+        <star>1;3</star>
+        <star>5;3</star>
+    </scheme>
+
+    <scheme code="024" name="Learn Inclusiveness 2" sector="PlaceHolderSector">
+        <bulb need = "2">3;5</bulb>
+        <lumen>3;7</lumen>
+        <grid>
+            <dot>2;5</dot>
+            <dot>3;4</dot>
+            <dot>5;4</dot>
+            <dot>3;6</dot>
+            <dot>4;4</dot>
+            <dot>3;3</dot>
+            <dot>4;7</dot>
+            <dot>4;5</dot>
+            <dot>5;5</dot>
+            <dot>5;3</dot>
+            <dot>4;6</dot>
+            <dot>1;4</dot>
+            <dot>2;4</dot>
+            <dot>5;7</dot>
+            <dot>5;6</dot>
+            <dot>3;7</dot>
+            <dot>1;7</dot>
+            <dot>3;5</dot>
+            <dot>4;3</dot>
+            <dot>2;3</dot>
+            <dot>1;5</dot>
+            <dot>1;3</dot>
+            <dot>1;6</dot>
+            <dot>2;7</dot>
+            <dot>2;6</dot>
+        </grid>
+        <obst gamma="false" theta="false">2;5;3;4</obst>
+        <obst gamma="false" theta="false">3;4;4;5</obst>
+        <obst gamma="false" theta="false">2;5;3;6</obst>
+        <obst gamma="false" theta="false">3;6;4;5</obst>
+        <star>5;5</star>
+        <star>1;5</star>
+        <star>3;3</star>
+    </scheme>
+
+    <scheme code="025" name="" sector="Roberto">
+        <bulb need = "2">1;3</bulb>
+        <lumen>5;7</lumen>
+        <grid>
+            <dot>2;5</dot>
+            <dot>3;4</dot>
+            <dot>5;4</dot>
+            <dot>4;4</dot>
+            <dot>3;3</dot>
+            <dot>4;7</dot>
+            <dot>4;5</dot>
+            <dot>5;5</dot>
+            <dot>5;3</dot>
+            <dot>4;6</dot>
+            <dot>1;4</dot>
+            <dot>2;4</dot>
+            <dot>5;7</dot>
+            <dot>5;6</dot>
+            <dot>3;7</dot>
+            <dot>1;7</dot>
+            <dot>3;5</dot>
+            <dot>4;3</dot>
+            <dot>2;3</dot>
+            <dot>1;5</dot>
+            <dot>1;3</dot>
+            <dot>1;6</dot>
+            <dot>2;7</dot>
+            <dot>2;6</dot>
+        </grid>
+        <obst>4;7;4;7</obst>
+        <obst>4;6;4;6</obst>
+        <obst>5;6;5;6</obst>
+        <obst gamma="false" theta="false">2;4;1;5</obst>
+        <obst gamma="false">2;4;4;5</obst>
+        <star>3;4</star>
+        <star>3;5</star>
+        <star>3;7</star>
+    </scheme>
+
+
+    <scheme code="026" sector="Laura">
+        <bulb need = "2">5;3</bulb>
+        <lumen>1;7</lumen>
+        <grid>
+            <dot>2;6</dot>
+            <dot>5;3</dot>
+            <dot>2;5</dot>
+            <dot>5;5</dot>
+            <dot>2;3</dot>
+            <dot>2;4</dot>
+            <dot>4;5</dot>
+            <dot>4;3</dot>
+            <dot>4;6</dot>
+            <dot>4;7</dot>
+            <dot>3;3</dot>
+            <dot>1;6</dot>
+            <dot>1;5</dot>
+            <dot>1;7</dot>
+            <dot>1;4</dot>
+            <dot>3;6</dot>
+            <dot>1;3</dot>
+            <dot>5;4</dot>
+            <dot>3;7</dot>
+            <dot>3;5</dot>
+            <dot>3;4</dot>
+            <dot>4;4</dot>
+            <dot>5;7</dot>
+            <dot>5;6</dot>
+            <dot>2;7</dot>
+        </grid>
+        <obst>3;5;4;5</obst>
+        <obst>1;4;2;3</obst>
+        <obst>3;5;3;6</obst>
+        <obst>2;5;3;5</obst>
+        <star>5;7</star>
+        <star>1;6</star>
+        <star>2;4</star>
+    </scheme>
 
 
 
@@ -794,15 +915,7 @@
 
 
 
-
-
-
-
-
-
-
-
-        <scheme code="900" name="" sector="">
+        <!--scheme code="900" name="" sector="">
             <bulb need = "2">3;4</bulb>
             <lumen>3;6</lumen>
             <grid>SIZE_7_9</grid>
@@ -1233,7 +1346,7 @@
         <bulb need = "2">3;4</bulb>
         <lumen>3;6</lumen>
         <grid>SIZE_7_9</grid>
-    </scheme>
+    </scheme-->
 
 
 </schemes>

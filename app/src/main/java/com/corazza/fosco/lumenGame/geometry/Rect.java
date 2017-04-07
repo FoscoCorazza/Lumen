@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.animation.Animation;
 
 import com.corazza.fosco.lumenGame.gameObjects.Lumen;
+import com.corazza.fosco.lumenGame.gameObjects.obstacles.Obstructor;
 import com.corazza.fosco.lumenGame.geometry.dots.Dot;
 import com.corazza.fosco.lumenGame.geometry.dots.PixelDot;
 import com.corazza.fosco.lumenGame.helpers.Paints;
@@ -128,8 +129,25 @@ public class Rect extends Line {
     }
 
     public static Dot intersecates(Rect rect1, Rect rect2){
-        if(rect1.coincident(rect2)) return Consts.COINCIDENT;
-        if(rect1.parallelAt(rect2))      return null;
+        if(rect1.parallelAt(rect2)) {
+            if(rect1.coincident(rect2)){
+                if(rect1 instanceof Segment && rect2 instanceof Segment){
+                    Segment s1 = (Segment) rect1;
+                    Segment s2 = (Segment) rect2;
+                    if(s1.extensionOf(s2)) {
+                        if (s1.gamma.equals(s2.gamma) || s1.gamma.equals(s2.theta)) {
+                            return s1.gamma;
+                        }
+                        if (s1.theta.equals(s2.gamma) || s1.theta.equals(s2.theta)) {
+                            return s1.theta;
+                        }
+                    } else {
+                        return Consts.COINCIDENT;
+                    }
+                }
+            }
+            return null;
+        }
 
         float x, y;
         float m1 = rect1.m();
@@ -155,12 +173,21 @@ public class Rect extends Line {
         return intersecates(this, rect);
     }
 
-    public boolean intersecatesAnyOf(List<? extends Rect> rects){
+    public boolean intersecatesAnyOf(List<? extends Obstructor> obs){
 
-        for(Rect rect : rects){
-            if(intersecates(this, rect) != null) return true;
+        for(Obstructor o : obs){
+            if(o.intersecates(this) != null) return true;
         }
         return false;
+    }
+
+    public float mInDegrees() {
+        if(m() == Consts.INFINITE) return 90;
+        return (float) Math.toDegrees(Math.atan(m()));
+    }
+
+    public float mInRadians() {
+        return (float) Math.toRadians(mInDegrees());
     }
 
     public float m(){
@@ -205,5 +232,10 @@ public class Rect extends Line {
         if(d == Direction.GAMMATHETA) return theta;
         if(d == Direction.THETAGAMMA) return gamma;
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return gamma.toString() + " to " + theta.toString();
     }
 }

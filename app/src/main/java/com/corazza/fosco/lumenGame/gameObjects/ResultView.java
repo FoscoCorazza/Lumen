@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.os.AsyncTask;
 
 import com.corazza.fosco.lumenGame.R;
 import com.corazza.fosco.lumenGame.geometry.dots.Dot;
@@ -13,10 +14,9 @@ import com.corazza.fosco.lumenGame.helpers.Consts;
 import com.corazza.fosco.lumenGame.helpers.Paints;
 import com.corazza.fosco.lumenGame.helpers.Palette;
 import com.corazza.fosco.lumenGame.helpers.Utils;
-import com.corazza.fosco.lumenGame.schemes.DList;
+import com.corazza.fosco.lumenGame.lists.Dlist;
 import com.corazza.fosco.lumenGame.schemes.SchemeLayoutDrawable;
 
-import static com.corazza.fosco.lumenGame.helpers.Utils.prevCode;
 import static com.corazza.fosco.lumenGame.helpers.Utils.scaledFrom480Int;
 import static com.corazza.fosco.lumenGame.helpers.Utils.scaledInt;
 
@@ -35,16 +35,17 @@ public class ResultView extends SchemeLayoutDrawable {
     private int picked = 0;
     private int waste = 0;
 
-    private DList<Star> obulbs = new DList<>();
-    private DList<Star> wasted = new DList<>();
-    private DList<Star> perfct = new DList<>();
-    private DList<Star> result = new DList<>();
+    private Dlist<Star> obulbs = new Dlist<>();
+    private Dlist<Star> wasted = new Dlist<>();
+    private Dlist<Star> perfct = new Dlist<>();
+    private Dlist<Star> result = new Dlist<>();
+    private boolean animationFinished;
 
     public ResultView(Context context) {
         initPaints();
         this.context = context;
         this.opacity = 0;
-
+        this.animationFinished = false;
         setStars();
 
     }
@@ -71,6 +72,11 @@ public class ResultView extends SchemeLayoutDrawable {
             result.add(new Star(new PixelDot(cx - (i-2) * dist, cy - apotemaY + 9*f)));
         }
 
+        obulbs.inherit(this);
+        wasted.inherit(this);
+        perfct.inherit(this);
+        result.inherit(this);
+
     }
 
     @Override
@@ -85,40 +91,6 @@ public class ResultView extends SchemeLayoutDrawable {
     public void update() {
         super.update();
 
-        obulbs.inherit(this);
-        wasted.inherit(this);
-        perfct.inherit(this);
-        result.inherit(this);
-
-        int r = 0;
-
-        for(int i = 0; i < picked; i++){
-            obulbs.get(i).setPicked(true);
-            r++;
-        }
-        for(int i = picked; i < total; i++){
-            obulbs.get(i).setPicked(false);
-        }
-
-
-        if(waste == 0) {
-            wasted.get(0).setPicked(true);
-            r++;
-        } else {
-            wasted.get(0).setPicked(false);
-        }
-
-        if(waste == 0 && picked == total) {
-            perfct.get(0).setPicked(true);
-            r++;
-        } else {
-            perfct.get(0).setPicked(false);
-        }
-
-        for(int i = 0; i < r; i++){
-            result.get(i).setPicked(true);
-        }
-
         obulbs.update();
         wasted.update();
         perfct.update();
@@ -130,11 +102,6 @@ public class ResultView extends SchemeLayoutDrawable {
     public void render(Canvas canvas) {
         Dot size    = MIN_SIZE;
         Dot center  = MIN_CENTER;
-
-        /*if(grid != null){
-            size   = Dot.min(Dot.max(grid.getMaxSize().add(1), MIN_SIZE), MAX_SIZE);
-            center = grid.getCenter();
-        }*/
 
         drawStroke(canvas, center, size, new GridDot(0.5, 3), Paints.get(STROKE, alpha()));
         drawString(canvas, center, size);
@@ -225,9 +192,70 @@ public class ResultView extends SchemeLayoutDrawable {
         this.waste = waste;
     }
 
-    /*public void setGrid(Grid grid) {
-        this.grid = grid;
-    }*/
+
+    @Override
+    public void startFadeIn() {
+        super.startFadeIn();
+        (new StarPickerRunnable()).execute();
+    }
+
+    public boolean isAnimationFinished() {
+        return animationFinished;
+    }
+
+    private class StarPickerRunnable extends AsyncTask<Object, Object, Object> {
+
+        private static final int WAIT = 200;
+        private static final int DELAY = 1000;
+
+        private void sleep(int ms) {
+            try {
+                Thread.sleep(ms);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        protected Object doInBackground(Object[] objects) {
+            int r = 0;
+            sleep(DELAY);
+            for(int i = 0; i < picked; i++){
+                obulbs.get(i).setPicked(true);
+                sleep(WAIT);
+                r++;
+            }
+            for(int i = picked; i < total; i++){
+                obulbs.get(i).setPicked(false);
+            }
+
+            if(waste == 0) {
+                wasted.get(0).setPicked(true);
+                sleep(WAIT);
+                r++;
+            } else {
+                wasted.get(0).setPicked(false);
+            }
+
+            if(waste == 0 && picked == total) {
+                perfct.get(0).setPicked(true);
+                sleep(WAIT);
+                r++;
+            } else {
+                perfct.get(0).setPicked(false);
+            }
+
+
+            sleep(WAIT*2);
+
+            for(int i = 0; i < r; i++){
+                result.get(4-i).setPicked(true);
+            }
+
+            animationFinished = true;
+            return null;
+        }
+    }
 
 
 }

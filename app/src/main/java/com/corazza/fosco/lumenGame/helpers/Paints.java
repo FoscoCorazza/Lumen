@@ -36,8 +36,8 @@ public  class Paints {
         return r;
     }
 
-    public static Paint get(String id, int opacity){
-        collection.get(id).setAlpha(opacity);
+    public static Paint get(String id, int alpha){
+        collection.get(id).setAlpha(alpha);
         return collection.get(id);
     }
 

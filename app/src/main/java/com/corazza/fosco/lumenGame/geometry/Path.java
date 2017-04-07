@@ -1,12 +1,10 @@
 package com.corazza.fosco.lumenGame.geometry;
 import android.graphics.Canvas;
-import android.util.Pair;
 
 import com.corazza.fosco.lumenGame.geometry.dots.Dot;
 import com.corazza.fosco.lumenGame.geometry.dots.GridDot;
-import com.corazza.fosco.lumenGame.helpers.AnimType;
 import com.corazza.fosco.lumenGame.helpers.Utils;
-import com.corazza.fosco.lumenGame.schemes.DList;
+import com.corazza.fosco.lumenGame.lists.Dlist;
 import com.corazza.fosco.lumenGame.schemes.SchemeLayoutDrawable;
 import com.corazza.fosco.lumenGame.gameObjects.Grid;
 
@@ -62,7 +60,6 @@ public class Path extends SchemeLayoutDrawable {
         for(Line line : list) {
             if(line != null) {
                 line.inherit(this);
-                line.setTextOpacity(text_opacity);
                 line.render(canvas, x, y);
             }
         }
@@ -294,24 +291,8 @@ public class Path extends SchemeLayoutDrawable {
         return Radical.Infinite;
     }
 
-    public void notifyTextFadeOut() {
-        isTextFadingOut = true;
-        setTimeElapsed(TEXT_FADING, 0);
-    }
-
-    @Override
-    protected void updateOpacity(){
-        super.updateOpacity();
-        if(isTextFadingOut) {
-            text_opacity = valueOfNow(TEXT_FADING, 1, 0, 0, FADING_TIME, AnimType.DEFAULT);
-        } else {
-            text_opacity = 1;
-        }
-
-    }
-
-    public DList<Segment> getSegments() {
-        DList<Segment> r = new DList<>();
+    public Dlist<Segment> getSegments() {
+        Dlist<Segment> r = new Dlist<>();
         for (Line l : lines) if(l instanceof Segment) r.add((Segment) l);
         return r;
     }

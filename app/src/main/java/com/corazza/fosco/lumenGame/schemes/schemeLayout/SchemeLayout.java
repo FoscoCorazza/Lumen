@@ -8,7 +8,6 @@ import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 
 import com.corazza.fosco.lumenGame.activities.MainActivity;
 import com.corazza.fosco.lumenGame.MainThread;
@@ -18,6 +17,7 @@ import com.corazza.fosco.lumenGame.activities.TitleActivity;
 import com.corazza.fosco.lumenGame.gameObjects.Background;
 import com.corazza.fosco.lumenGame.gameObjects.Bulb;
 import com.corazza.fosco.lumenGame.gameObjects.SegmentCreatorListener;
+import com.corazza.fosco.lumenGame.gameObjects.SegmentEraserListener;
 import com.corazza.fosco.lumenGame.gameObjects.huds.Button;
 import com.corazza.fosco.lumenGame.gameObjects.ResultView;
 import com.corazza.fosco.lumenGame.gameObjects.Grid;
@@ -31,32 +31,34 @@ import com.corazza.fosco.lumenGame.gameObjects.obstacles.Obstacle;
 import com.corazza.fosco.lumenGame.gameObjects.obstacles.Obstructor;
 import com.corazza.fosco.lumenGame.geometry.Radical;
 import com.corazza.fosco.lumenGame.geometry.dots.Dot;
-import com.corazza.fosco.lumenGame.geometry.dots.GridDot;
-import com.corazza.fosco.lumenGame.geometry.dots.PixelDot;
 import com.corazza.fosco.lumenGame.helpers.AnimType;
 import com.corazza.fosco.lumenGame.geometry.Line;
 import com.corazza.fosco.lumenGame.geometry.Path;
 import com.corazza.fosco.lumenGame.geometry.Segment;
 import com.corazza.fosco.lumenGame.helpers.Consts;
+import com.corazza.fosco.lumenGame.helpers.Mechanics;
 import com.corazza.fosco.lumenGame.helpers.MessagesHelper;
 import com.corazza.fosco.lumenGame.helpers.Paints;
 import com.corazza.fosco.lumenGame.helpers.Phase;
 import com.corazza.fosco.lumenGame.helpers.SoundsHelper;
 import com.corazza.fosco.lumenGame.helpers.Utils;
+import com.corazza.fosco.lumenGame.lists.ListOfSegments;
+import com.corazza.fosco.lumenGame.lists.ListOfSegmentsWithInclusion;
 import com.corazza.fosco.lumenGame.savemanager.SaveFileManager;
 import com.corazza.fosco.lumenGame.savemanager.SchemeResult;
-import com.corazza.fosco.lumenGame.schemes.DList;
+import com.corazza.fosco.lumenGame.lists.Dlist;
 import com.corazza.fosco.lumenGame.schemes.SchemeLayoutDrawable;
 import com.corazza.fosco.lumenGame.schemes.SchemeToast;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
-public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback, Lumen.SchemeLayoutListener, Button.ButtonListener {
+public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback, Button.ButtonListener {
 
 
     private static final int MAX_NEED = 10;
@@ -75,10 +77,10 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
     public ResultHud   hud2;
     public ResultView  ends;
 
-    public DList<Bulb> blbs = new DList<>();
-    public DList<Star> strs = new DList<>();
-    public DList<Lumen> lums = new DList<>();
-    public DList<Obstacle> obst = new DList<>();
+    public Dlist<Bulb> blbs = new Dlist<>();
+    public Dlist<Star> strs = new Dlist<>();
+    public Dlist<Lumen> lums = new Dlist<>();
+    public Dlist<Obstacle> obst = new Dlist<>();
 
     private HashSet<SchemeLayoutDrawable> drawableCollection = new HashSet<>();
 
@@ -94,6 +96,7 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
     private String debugLabel = "";
     private boolean eraseEnabled = false;
     private int wastedLums = 0;
+    private boolean WON = false;
 
     // Costruttori e Inizializzatori.
     public SchemeLayout(Context activity) {
@@ -146,19 +149,16 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
 
     public void setGrid(Collection<Dot> points) {
         grid = new Grid(points);
-        //ends.setGrid(grid);
         collect(grid);
     }
 
     public void setGrid(Grid.FillType fillType) {
         grid = new Grid(fillType);
-        //ends.setGrid(grid);
         collect(grid);
     }
 
     public void setGrid(Grid grid) {
         this.grid = grid;
-        //ends.setGrid(grid);
         grid.renew();
         collect(grid);
     }
@@ -167,11 +167,10 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
 
 
     public void putObstacle(Obstacle obstacle){
-        if(obst == null) obst = new DList<>();
+        if(obst == null) obst = new Dlist<>();
         obst.add(obstacle);
         obstacle.startAnimation();
     }
-
 
     public void putDestructor(Dot p1, Dot p2){
         putObstacle(new Destructor(p1,p2));
@@ -179,23 +178,23 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
     public void putDeflector(Dot p1, Dot p2){
         putObstacle(new Deflector(p1,p2));
     }
-    public void putObstructor(Dot p1, Dot p2){
-        putObstacle(new Obstructor(p1,p2));
+    public void putObstructor(Dot p1, Dot p2, Boolean gammaIncl, Boolean thetaIncl){
+        putObstacle(new Obstructor(p1,p2,gammaIncl,thetaIncl));
     }
 
-    public void putObstructors(List<Pair<Dot, Dot>> dots){
+    public void putObstructors(ListOfSegmentsWithInclusion dots){
         if(dots != null)
-            for(Pair<Dot, Dot> pair : dots )
-                putObstructor(pair.first, pair.second);
+            for(ListOfSegmentsWithInclusion.Element pair : dots )
+                putObstructor(pair.first.first, pair.first.second, pair.second.first, pair.second.second);
     }
 
-    public void putDestructors(List<Pair<Dot, Dot>> dots) {
+    public void putDestructors(ListOfSegments dots) {
         if(dots != null)
             for(Pair<Dot, Dot> pair : dots )
                 putDestructor(pair.first, pair.second);
     }
 
-    public void putDeflectors(List<Pair<Dot, Dot>> dots) {
+    public void putDeflectors(ListOfSegments dots) {
         if(dots != null)
             for(Pair<Dot, Dot> pair : dots )
                 putDeflector(pair.first, pair.second);
@@ -229,6 +228,10 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
         if(lumen != null && lumen.isActive()) {
 
             ArrayList<Line> next = path.next(lumen.position, fromHere);
+            if(Mechanics.LUMEN_INTUITIVE_MERGE){
+                next.removeAll(lumen.getSegmentsFromWhichaTwinCame());
+                lumen.setSegmentsFromWhichaTwinCame(null);
+            }
 
             // Controllo se l'attuale Lume è sul Bulbo
             Bulb bulb = onBulb(lumen);
@@ -241,7 +244,7 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
                         // Se un Lumen è su un segmento che porta al Bulb AND
                         // la sua distanza percorsa+SuddettoSegmento è uguale alla mia distanza percorsa
                         // Allora sono entrambi sul bulbo.
-                        boolean onTheBulb = l.onTheWayOn(bulb.position);
+                        boolean onTheBulb = l.onTheWayTo(bulb.position);
                         boolean travelEql = l.traveledAsMuchAs(lumen) ;
 
                         if(onTheBulb && travelEql) {
@@ -252,17 +255,24 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
 
                     if (lumenOnTheBulb == bulb.getNeed()){
                         boolean won = true;
-                        boolean otherActiveLumen = false;
+                        Dlist<Lumen> activeLums = new Dlist<>();
 
                         for(Lumen l : winnerLums) l.fadeOff(false);
-                        for(Lumen l : lums) if(l.isActive()) otherActiveLumen = true;
-                        for(Bulb b : blbs) if(!b.equals(bulb) && !b.isSaturated()) won = false;
+                        for(Lumen l : lums) if(l.isActive()) activeLums.add(l);
+                        for(Bulb b  : blbs) if(!b.equals(bulb) && !b.isSaturated()) won = false;
+
+                        WON = won;
 
                         if(won && isSpecialWinConditionFulfilled()) {
                             SoundsHelper.getInstance().play_bulb(getActivity());
+                            if(Mechanics.WASTED_LUMEN_INCLUSIVE) {
+                                wastedLums += activeLums.size();
+                                // TODO Active lums sono quelli ancora in giro ... quindi potrei barare sul wasted.
+                            }
                             bulb.notifySaturation(this, true);
-                            softStop(won);
-                        } else if (otherActiveLumen){
+                            pickStar(activeLums, lumen.getTravelLength());
+                            softStop(true);
+                        } else if (activeLums.size() > 0){
                             bulb.notifySaturation(this, false);
                         } else {
                             SoundsHelper.getInstance().play_error(getActivity());
@@ -283,48 +293,49 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
                 // Qui ci sono i wasted lumen.
                 // TODO: Animazione e suono.
                 wastedLums++;
+                pickStar(lumen.position);
                 fadeOff(lumen);
 
             // Controllo se non ho superato la quantità massima di Lumes.
             } else if ( lums.size() + next.size() - 1 < Consts.lumenMax) {
-                Lumen lumenToAnimate;
+                pickStar(lumen.position);
 
                 //Controllo che esista già un Lumen che, nello stesso momento, faccia questo specifico split.
                 int splitterCount = 0;
+                Dlist<Line> commonFateLaysOn = new Dlist<>();
+                HashMap<Line, Boolean> futureLines = new HashMap<>();
                 for(int i = 0; i < next.size(); i++){
-                    boolean commonFateLumenFound = false;
-                    List<Lumen> list = lums.getRawListCopy();
-                    for(Lumen l : list){
+                    if(!(Mechanics.LUMEN_INTUITIVE_MERGE && commonFateLaysOn.contains(next.get(i)))) {
+                        boolean commonFateLumenFound = false;
+                        List<Lumen> list = lums.getRawListCopy();
+                        for (Lumen l : list) {
 
-                        boolean differentLumen = l != lumen;
-                        boolean headingOnMe = l.onTheWayOn(lumen.position);
-                        boolean sameDistance = l.traveledAsMuchAs(lumen);
-                        boolean differentSegment = !next.get(i).equals(l.laying);
+                            boolean differentLumen = l != lumen;
+                            boolean headingOnMe = l.onTheWayTo(lumen.position);
+                            boolean sameDistance = l.traveledAsMuchAs(lumen);
+                            boolean differentSegment = !next.get(i).equals(l.laying);
 
-                        if (headingOnMe  && differentLumen && sameDistance && differentSegment) {
-                            // Ho trovato un lumen diverso da se stesso con lo stesso fato: quindi non lo faccio partire.
-                            SoundsHelper.getInstance().play_unite(getActivity());
-                            commonFateLumenFound = true;
-                            break;
+                            if (headingOnMe && differentLumen && sameDistance && differentSegment) {
+                                // Ho trovato un lumen diverso da se stesso con lo stesso fato: quindi non lo faccio partire.
+                                if (!commonFateLumenFound) {
+                                    SoundsHelper.getInstance().play_unite(getActivity());
+                                }
+                                commonFateLumenFound = true;
+                                if(Mechanics.LUMEN_INTUITIVE_MERGE) {
+                                    commonFateLaysOn.add(l.laying);
+                                    futureLines.remove(l.laying);
+                                    l.putSegmentFromWhichaTwinCame(lumen.laying);
+                                } else {
+                                    break;
+                                }
+                            }
                         }
+                        futureLines.put(next.get(i), !commonFateLumenFound);
                     }
-                    if(!commonFateLumenFound) {
+                }
 
-                        lumenToAnimate = lumen.duplicate();
-                        lums.add(lumenToAnimate);
-
-                        long duration = ((long) (next.get(i).length().pixelLength() / lumenToAnimate.getSpeed())) - TTR;
-                        lumenToAnimate.startAnimation(next.get(i), duration);
-
-                        // Conto gli split:
-                        splitterCount++;
-                        if(splitterCount==2 && !lumenToAnimate.position.equals(spnt)){
-                            // Io voglio controllare solo al SECONDO lumen splittato:
-                            // Al terzo split ho giá fatto qualunque azione io voglia fare.
-                            SoundsHelper.getInstance().play_split(getActivity());
-                        }
-                    }
-                    lums.remove(lumen);
+                for(Map.Entry<Line, Boolean> entry : futureLines.entrySet()){
+                    startAnim(lumen, TTR, entry.getKey(), entry.getValue());
                 }
 
             // Se arrivo qui significa che ho superato la quantità massima di Lumes.
@@ -335,14 +346,45 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
         }
     }
 
-    protected boolean isSpecialWinConditionFulfilled() {
-        return true;
+    private void startAnim(Lumen lumen, long TTR, Line line, boolean duplicate) {
+        if (duplicate) {
+
+            Lumen lumenToAnimate = lumen.duplicate();
+            lums.add(lumenToAnimate);
+
+            long duration = ((long) (line.length().pixelLength() / lumenToAnimate.getSpeed())) - TTR;
+            lumenToAnimate.startAnimation(line, duration);
+
+            // Conto gli split:
+            /*splitterCount++;
+            if (splitterCount == 2 && !lumenToAnimate.position.equals(spnt)) {
+                // Io voglio controllare solo al SECONDO lumen splittato:
+                // Al terzo split ho giá fatto qualunque azione io voglia fare.
+                SoundsHelper.getInstance().play_split(getActivity());
+            }*/
+        }
+        lums.remove(lumen);
     }
 
-    private boolean nearEnough(Dot one, Dot two) {
-        // TODO Questo viene usato solo per le stelle adesso: trova una soluzione alternativa!
-        // E NON USARLO!
-        return Math.abs(one.pixelX()-two.pixelX()) < 8 && Math.abs(one.pixelY()-two.pixelY()) < 8;
+    private void pickStar(Dot dot) {
+        if(strs != null && dot != null)
+            for(Star s : strs){
+                if(dot.gridDot().equals(s.gamma.gridDot()))
+                {
+                    if(!s.isPicked()) SoundsHelper.getInstance().play_star(getActivity());
+                    s.setPicked(true);
+                }
+            }
+    }
+
+    private void pickStar(Dlist<Lumen> lums, Radical travelDistance) {
+        for(Lumen lumen : lums)
+            if(travelDistance.equals(lumen.getTravelLength()))
+                pickStar(lumen.endPoint());
+    }
+
+    protected boolean isSpecialWinConditionFulfilled() {
+        return true;
     }
 
     private Bulb onBulb(Lumen lumen) {
@@ -356,7 +398,7 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
         lums.remove(lumen);
         boolean noLumsLeft = true;
         for(Lumen l : lums) if(l.active) noLumsLeft = false;
-        if(noLumsLeft) {
+        if(noLumsLeft && !WON) {
             hud1.setButtonsEnabled(true);
             unpickStars();
             for(Bulb b : blbs.getRawListCopy()) b.renewWhenAnimationFinishes();
@@ -369,54 +411,20 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
     }
 
     protected OnTouchListener getSegmentEraser() {
-        return new OnTouchListener() {
-
-            @Override
-            public boolean onTouch(View view, MotionEvent event) {
-                boolean hud1Touched = hud1.onTouch(event);
-                boolean hud2Touched = hud2.onTouch(event);
-                if (phase != Phase.USER_PLAYING || !touchEnabled || hud1Touched || hud2Touched) return true;
-                view.getParent().requestDisallowInterceptTouchEvent(true);
-                PixelDot rawPoint = new PixelDot(event.getRawX(),  event.getRawY());
-                GridDot normPoint = grid.nearest(rawPoint).gridDot();
-
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_MOVE:
-                        SoundsHelper.getInstance().play_eraser(getActivity());
-                        eraseElementAt(normPoint);
-                        break;
-
-                    case MotionEvent.ACTION_UP:
-                        SoundsHelper.getInstance().stop_eraser();
-                        break;
-
-                }
-
-                return true;
-            }
-
-            private void eraseElementAt(GridDot dot) {
-                if(path != null){
-                    Segment segm = path.getSegments().elementIn(dot);
-                    if(segm != null) {
-                        path.remove(segm);
-                        flatten();
-                        split();
-                    }
-                }
-            }
-        };
+        return new SegmentEraserListener(this);
     }
 
     // Callback dei Bottoni
     public void onStartButtonClick(){
         hud1.setButtonsEnabled(false);
+        if(eraseEnabled) onEraseButtonClick();
         start();
         updateMinDist();
     }
 
     public void onResetButtonClick(){
         hud1.setButtonsEnabled(true);
+        if(eraseEnabled) onEraseButtonClick();
         reset();
         updateMinDist();
     }
@@ -428,11 +436,6 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
 
     public void onBackButtonClick(){
         toMenu();
-    }
-
-    public void onUndoButtonClick(){
-        if(path != null) path.undo();
-        updateMinDist();
     }
 
     public void onEraseButtonClick(){
@@ -454,7 +457,7 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
 
     //Bulb Managment
     public void addBulb(Dot p) {
-        if(blbs == null) blbs = new DList<>();
+        if(blbs == null) blbs = new Dlist<>();
         Bulb bulb = new Bulb(p);
         bulb.startAnimation();
         blbs.add(bulb);
@@ -462,7 +465,7 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
     }
 
     public void addBulb(Bulb bulb) {
-        if(blbs == null) blbs = new DList<>();
+        if(blbs == null) blbs = new Dlist<>();
         bulb.startAnimation();
         blbs.add(bulb);
         collect(blbs);
@@ -545,9 +548,7 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
             try {
                 thread.join();
                 retry = false;
-            } catch (InterruptedException e) {
-                // try again shutting down the thread
-            }
+            } catch (InterruptedException ignored) {}
         }
     }
 
@@ -558,7 +559,7 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
         }
 
         // Aggiornamento di fase;
-        if(phase == Phase.COMPLETING_TRANSITION && ends.hasFadedIn()){
+        if(phase == Phase.COMPLETING_TRANSITION && ends.isAnimationFinished()){
             phase = Phase.RESULT;
         }
 
@@ -570,8 +571,8 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
             clear(canvas);
             render(canvas, bckg);
             render(canvas, grid);
-            render(canvas, path);
             render(canvas, obst);
+            render(canvas, path);
             render(canvas, strs);
             render(canvas, blbs);
             render(canvas, lums);
@@ -643,7 +644,7 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
     }
 
 
-    public DList<Bulb> getBulbs() {
+    public Dlist<Bulb> getBulbs() {
         return blbs;
     }
 
@@ -668,23 +669,21 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
         ends.setStarsValue(starsPicked(), strs.size());
         ends.setWastedLums(wastedLums);
 
-        notifyFadeOutToEverything();
-        hud2.notifyFadeIn();
-        ends.notifyFadeIn();
-        path.notifyTextFadeOut();
+        startFadeOutEverything();
+        hud2.startFadeIn();
+        ends.startFadeIn();
     }
 
 
-    private void notifyFadeOutToEverything() {
-        strs.notifyFadeOut();
-        blbs.notifyFadeOut();
-        path.notifyFadeOut();
-        obst.notifyFadeOut();
-
-        grid.notifyFadeOut();
-        lums.notifyFadeOut();
-        hud1.notifyFadeOut();
-        if(tost != null) tost.notifyFadeOut();
+    private void startFadeOutEverything() {
+        strs.startFadeOut();
+        blbs.startFadeOut();
+        path.startFadeOut();
+        obst.startFadeOut();
+        grid.startFadeOut();
+        lums.startFadeOut();
+        hud1.startFadeOut();
+        if(tost != null) tost.startFadeOut();
     }
 
     protected int starsPicked() {
@@ -755,18 +754,6 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
             else {
             tost = new SchemeToast(s);
             collect(tost);
-        }
-    }
-
-    @Override
-    public void onUpdate(SchemeLayoutDrawable sender) {
-        if(strs != null && sender.position != null)
-        for(Star s : strs){
-            if(!s.isPicked() && s.gamma != null && nearEnough(s.gamma, sender.position))
-            {
-                SoundsHelper.getInstance().play_star(getActivity());
-                s.pick();
-            }
         }
     }
 
@@ -895,11 +882,20 @@ public class SchemeLayout extends SurfaceView implements SurfaceHolder.Callback,
         for(Bulb bulb : getBulbs()) {
             splitted = path.splitAt(splitted, bulb.position);
         }
+        if (strs != null) for(Star star : strs) {
+            splitted = path.splitAt(splitted, star.gamma);
+        }
         path.splitAt(splitted, grid);
     }
 
 
     public boolean unwasted(){
         return wastedLums == 0;
+    }
+
+    public boolean touchIsUnuseful(MotionEvent event) {
+        boolean hud1Touched = hud1.onTouch(event);
+        boolean hud2Touched = hud2.onTouch(event);
+        return  (phase != Phase.USER_PLAYING || !touchEnabled || hud1Touched || hud2Touched);
     }
 }

@@ -12,6 +12,7 @@ import com.corazza.fosco.lumenGame.MainThread;
 import com.corazza.fosco.lumenGame.gameObjects.Background;
 import com.corazza.fosco.lumenGame.gameObjects.Bulb;
 import com.corazza.fosco.lumenGame.gameObjects.SegmentCreatorListener;
+import com.corazza.fosco.lumenGame.gameObjects.SegmentEraserListener;
 import com.corazza.fosco.lumenGame.gameObjects.Star;
 import com.corazza.fosco.lumenGame.gameObjects.huds.Button;
 import com.corazza.fosco.lumenGame.gameObjects.huds.CreatorHud;
@@ -149,8 +150,8 @@ public class SchemeCreatorLayout extends SchemeLayout {
                                     grid.toggleOnTap(rawPoint);
                                     reset();
                                     break;
-                                case STRONG_ERASE:
-                                    eraseElementAt(normPoint);
+                                case INCLUDE:
+                                    changeInclusionAt(normPoint);
                                     break;
                                 case STAR:
                                     Star s = strs.elementIn(normPoint);
@@ -179,23 +180,79 @@ public class SchemeCreatorLayout extends SchemeLayout {
         };
     }
 
-    private void eraseElementAt(GridDot dot) {
-        if(strs != null){
-            Star star = strs.elementIn(dot);
-            if(star != null) {
-                removeStar(star);
-                return;
-            }
-        }
+    private void changeInclusionAt(GridDot dot) {
+        boolean alreadyTurnedInInclusive = false;
+        boolean alreadyTurnedInExclusive = false;
 
         if(obst != null){
-            Obstacle o = obst.elementIn(dot);
-            if(o != null) {
-                removeObstacle(o);
+            for(Obstacle o : obst){
+                if(o.startsAt(dot) && !o.length().isZero()){
+                    boolean isGamma = o.gamma.equals(dot.pixelDot());
+
+                    if(isGamma){
+                        if(alreadyTurnedInExclusive)
+                            o.setGammaInclusive(false);
+                        else if (alreadyTurnedInInclusive)
+                            o.setGammaInclusive(true);
+                        else {
+                            o.setGammaInclusive(!o.isGammaInclusive());
+                            if(o.isGammaInclusive()){
+                                alreadyTurnedInInclusive = true;
+                            } else {
+                                alreadyTurnedInExclusive = true;
+                            }
+                        }
+                    } else {
+
+                        if(alreadyTurnedInExclusive)
+                            o.setThetaInclusive(false);
+                        else if (alreadyTurnedInInclusive)
+                            o.setThetaInclusive(true);
+                        else {
+                            o.setThetaInclusive(!o.isThetaInclusive());
+                            if(o.isThetaInclusive()){
+                                alreadyTurnedInInclusive = true;
+                            } else {
+                                alreadyTurnedInExclusive = true;
+                            }
+                        }
+
+                    }
+
+
+                }
             }
         }
+
     }
 
+    @Override
+    protected OnTouchListener getSegmentEraser() {
+        return new SegmentEraserListener(this) {
+
+            @Override
+            protected void eraseElementAt(GridDot dot){
+                super.eraseElementAt(dot);
+
+                //Super eraser!
+                if(strs != null){
+                    Star star = strs.elementIn(dot);
+                    if(star != null) {
+                        removeStar(star);
+                        return;
+                    }
+                }
+
+                if(obst != null){
+                    Obstacle o = obst.elementIn(dot);
+                    if(o != null) {
+                        removeObstacle(o);
+                    }
+                }
+            }
+
+        };
+    }
 
     @Override
     public void onNextButtonClick() {
@@ -241,7 +298,11 @@ public class SchemeCreatorLayout extends SchemeLayout {
         r += "<grid>\n" + grid.XMLString() + "</grid>\n";
         if(obst != null){
             for(Obstacle o : obst){
-                r += "<obst>" + o.gamma.XMLString() + ";" + o.theta.XMLString() + "</obst>\n";
+                String inclusion = "";
+                if(!o.isGammaInclusive()) inclusion += " gamma=\"false\"";
+                if(!o.isThetaInclusive()) inclusion += " theta=\"false\"";
+
+                r += "<obst"+inclusion+">" + o.gamma.XMLString() + ";" + o.theta.XMLString() + "</obst>\n";
             }
         }
         if(strs != null){

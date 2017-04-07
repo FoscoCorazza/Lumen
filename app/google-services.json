@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "26174094273",
+    "firebase_url": "https://lumen-17b7e.firebaseio.com",
+    "project_id": "lumen-17b7e",
+    "storage_bucket": "lumen-17b7e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:26174094273:android:ce83b9fa3c358f87",
+        "android_client_info": {
+          "package_name": "com.corazza.fosco.circline"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "26174094273-7to0chru1q546nrsbiu83d529f55uni5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.corazza.fosco.circline",
+            "certificate_hash": "cbf89c654b2caf10f404265b188ca64872241d34"
+          }
+        },
+        {
+          "client_id": "26174094273-81n3dijh35fggkbnkvr69tuoc8l6n42p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA61xFBt_3JtG1mBMDTIGLlkucwqJABCXw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "26174094273-81n3dijh35fggkbnkvr69tuoc8l6n42p.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

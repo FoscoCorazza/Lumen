@@ -1,4 +1,4 @@
-package com.corazza.fosco.lumenGame.schemes;
+package com.corazza.fosco.lumenGame.lists;
 
 import android.graphics.Canvas;
 import android.support.annotation.NonNull;
@@ -7,6 +7,7 @@ import com.corazza.fosco.lumenGame.gameObjects.Lumen;
 import com.corazza.fosco.lumenGame.gameObjects.Star;
 import com.corazza.fosco.lumenGame.geometry.dots.Dot;
 import com.corazza.fosco.lumenGame.geometry.dots.GridDot;
+import com.corazza.fosco.lumenGame.schemes.SchemeLayoutDrawable;
 
 import java.io.IOException;
 import java.io.InvalidObjectException;
@@ -22,10 +23,10 @@ import java.util.ListIterator;
 /**
  * Created by Simone on 12/08/2016.
  */
-public class DList<T extends SchemeLayoutDrawable> extends SchemeLayoutDrawable implements List<T> {
+public class Dlist<T extends SchemeLayoutDrawable> extends SchemeLayoutDrawable implements List<T> {
     private List<T> list = new ArrayList<>();
 
-    public DList() {
+    public Dlist() {
         this.list = new ArrayList<>();
     }
 
@@ -48,27 +49,16 @@ public class DList<T extends SchemeLayoutDrawable> extends SchemeLayoutDrawable 
 
     @Override
     public void update() {
-        updateOpacity();
+        super.update();
         for(T t : getRawListCopy()){
             t.inherit(this);
             t.update();
         }
     }
 
-    /*@Override
-    public void inherit(SchemeLayoutDrawable drawable) {
-        for(T t : getRawListCopy()){
-            t.inherit(this);
-        }
-    }*/
-
-
     public ArrayList<T> getRawListCopy() {
         return new ArrayList<>(list);
     }
-
-
-
 
     /*OVERRIDES DELLA LISTA*/
 
